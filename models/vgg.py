@@ -8,29 +8,17 @@ class Vgg16(torch.nn.Module):
         features = list(self.model.features)
         self.features = torch.nn.ModuleList(features).cuda().eval()
 
-    def forward(self, x):
-        results = []
-        last_layer = self.model(x)
+    def prediction(self, x, internal=[]):
+        pred = self.model(x)
+        if len(internal) == 0:
+            return pred
+        
+        layers = []
         for ii, model in enumerate(self.features):
             x = model(x)
-            if isinstance(model, torch.nn.modules.conv.Conv2d):
-                results.append(x)
-        results.append(last_layer)
-        return results
+            if(ii in internal):
+            # if isinstance(model, torch.nn.modules.conv.Conv2d):
+                layers.append(x)
+        return layers, pred
 
-class Vgg19(torch.nn.Module):
-    def __init__(self):
-        super(Vgg19, self).__init__()
-        self.model = models.vgg19(pretrained=True).cuda().eval()
-        features = list(self.model.features)
-        self.features = torch.nn.ModuleList(features).cuda().eval()
 
-    def forward(self, x):
-        results = []
-        last_layer = self.model(x)
-        for ii, model in enumerate(self.features):
-            x = model(x)
-            if isinstance(model, torch.nn.modules.conv.Conv2d):
-                results.append(x)
-        results.append(last_layer)
-        return results

@@ -1,8 +1,59 @@
 from PIL import Image, ImageFont, ImageDraw
 import numpy as np
-image = Image.open("images/0000.png")
-#font = ImageFont.truetype(font='font/FiraMono-Medium.otf',
-#                    size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
+from io import BytesIO
+from google.cloud.vision import types
+import os
+
+def load_image(
+        shape=(224, 224), bounds=(0, 1), dtype=np.float32,
+        data_format='channels_last', fname='example.png'):
+    """ Returns a resized image of target fname.
+
+    Parameters
+    ----------
+    shape : list of integers
+        The shape of the returned image.
+    data_format : str
+        "channels_first" or "channls_last".
+
+    Returns
+    -------
+    image : array_like
+        The example image in bounds (0, 255) or (0, 1)
+        depending on bounds parameter
+    """
+    assert len(shape) == 2
+    assert data_format in ['channels_first', 'channels_last']
+    path = os.path.join(os.path.dirname(__file__), 'images/%s' % fname)
+    image = Image.open(path)
+    image = image.resize(shape)
+    image = np.asarray(image, dtype=dtype)
+    image = image[:, :, :3]
+    assert image.shape == shape + (3,)
+    if data_format == 'channels_first':
+        image = np.transpose(image, (2, 0, 1))
+    if bounds != (0, 255):
+        image /= 255.
+    return image
+
+def save_image(image):
+    if image.shape[0] == 3:
+        image = np.transpose(image, (1, 2, 0))
+    if image.dtype is not np.uint8:
+        image = (image * 255).astype(np.uint8)
+    Image.fromarray(image).save("./out/test.jpg")    
+
+def numpy_to_bytes(image, format='JPEG'):
+    if image.shape[0] == 3:
+        image = np.transpose(image, (1, 2, 0))
+    if image.dtype is not np.uint8:
+        image = (image * 255).astype(np.uint8)
+    image = Image.fromarray(image)
+    byte_io = BytesIO()
+    image.save(byte_io, format=format)
+    image = byte_io.getvalue()
+    image = types.Image(content=image)
+    return image
 
 def to_coordinates(image, coords):
     top = coords[0] * image.size[1]
@@ -51,10 +102,5 @@ def draw_boxes(image, labels, boxes):
         del draw
     
     image.show()
-
-#coords = [0.42, 0.26, 0.94, 0.78]
-
-
-#draw_boxes(image, [coords])
 
 

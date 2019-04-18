@@ -2,6 +2,14 @@ from google.cloud import vision
 from google.cloud.vision import types
 import io
 
+def detect_label_numpy(image):
+    client = vision.ImageAnnotatorClient()
+
+    # Performs label detection on the image file
+    response = client.label_detection(image=image)
+    labels = response.label_annotations
+    return labels
+
 def detect_label(path):
     client = vision.ImageAnnotatorClient()
 
