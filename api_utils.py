@@ -8,9 +8,11 @@ def detect_label_numpy(image):
     # Performs label detection on the image file
     response = client.label_detection(image=image)
     labels = response.label_annotations
-    return labels
+    if len(labels) > 0:
+        return labels[0]
+    return None
 
-def detect_label(path):
+def detect_label_file(path):
     client = vision.ImageAnnotatorClient()
 
     # The name of the image file to annotate
@@ -24,7 +26,20 @@ def detect_label(path):
     labels = response.label_annotations
     return labels
 
-def localize_objects(path):
+
+def detect_objects_numpy(image):
+
+    client = vision.ImageAnnotatorClient()
+    objects = client.object_localization(
+        image=image).localized_object_annotations
+
+
+    if len(objects) > 0:
+        return objects[0].name
+    
+    return None
+
+def detect_objects_file(path):
     """Localize objects in the local image.
 
     Args:
@@ -52,7 +67,19 @@ def localize_objects(path):
     return objects
 
 
-def detect_text(path):
+def detect_text_numpy(image):
+    """Detects text in the file."""
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+
+    response = client.text_detection(image=image)
+    texts = response.text_annotations
+    if len(texts) > 0:
+        return texts[0].description.strip()
+    return None
+
+
+def detect_text_file(path):
     """Detects text in the file."""
     from google.cloud import vision
     client = vision.ImageAnnotatorClient()
@@ -74,7 +101,16 @@ def detect_text(path):
 
         print('bounds: {}'.format(','.join(vertices)))
 
-def detect_safe_search(path):
+def detect_safe_search_numpy(image):
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+
+    response = client.safe_search_detection(image=image)
+    safe = response.safe_search_annotation
+    
+    return safe.adult
+
+def detect_safe_search_file(path):
     """Detects unsafe features in the file."""
     from google.cloud import vision
     client = vision.ImageAnnotatorClient()
@@ -98,7 +134,23 @@ def detect_safe_search(path):
     #print('racy: {}'.format(likelihood_name[safe.racy]))
     return (safe.adult, safe.racy)
 
-def detect_faces(path):
+def detect_faces_numpy(image):
+    """Detects faces in an image."""
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+
+    response = client.face_detection(image=image)
+    faces = response.face_annotations
+
+    # Names of likelihood from google.cloud.vision.enums
+    likelihood_name = ('UNKNOWN', 'VERY_UNLIKELY', 'UNLIKELY', 'POSSIBLE',
+                       'LIKELY', 'VERY_LIKELY')
+    if len(faces) == 0:
+        return False
+
+    return True
+
+def detect_faces_file(path):
     """Detects faces in an image."""
     from google.cloud import vision
     client = vision.ImageAnnotatorClient()
@@ -110,7 +162,7 @@ def detect_faces(path):
 
     response = client.face_detection(image=image)
     faces = response.face_annotations
-
+    print(len(faces))
     # Names of likelihood from google.cloud.vision.enums
     likelihood_name = ('UNKNOWN', 'VERY_UNLIKELY', 'UNLIKELY', 'POSSIBLE',
                        'LIKELY', 'VERY_LIKELY')
