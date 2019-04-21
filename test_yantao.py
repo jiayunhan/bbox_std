@@ -1,33 +1,79 @@
-import torchvision
-from PIL import Image
+import torchvision.models as models
 import torch
-import numpy as np
-
+from PIL import Image
+from image_utils import load_image, save_image
+from torch_utils import numpy_to_variable, variable_to_numpy
+from image_utils import numpy_to_bytes
+from models.vgg import Vgg16
+from models.resnet import Resnet152
+from attacks.dispersion import DispersionAttack_opt, DispersionAttack
 from attacks.mifgsm import MomentumIteratorAttack
-from attacks.linf_pgd import LinfPGDAttack
+from api_utils import detect_label_numpy
+import numpy as np
+import torchvision
+from api_utils import detect_label_file
 import pdb
 
-image = Image.open("images/origin.jpg").convert('RGB')
-image = image.resize((224, 224))
+# Resnet152 [4, 5, 6, 7]
+# Vgg16 [2, 7, 14, 21, 28]
+image_np = load_image(data_format='channels_first', fname='0000.png')
+image = numpy_to_variable(image_np)
 
+
+model = Vgg16()
+internal = [i for i in range(29)]
+#attack = DispersionAttack(model, epsilon=255./255, step_size=7./255, steps=1000, test_api=True)
+attack = DispersionAttack_opt(model, epsilon=16./255, steps=2000, test_api=True)
+adv = image
+
+adv_np = variable_to_numpy(adv)
+Image.fromarray(np.transpose((adv_np * 255).astype(np.uint8), (1, 2, 0))).save('./out/3.jpg')
+google_label = detect_label_file('./out/3.jpg')
+
+if len(google_label) > 0:
+    pred_cls = google_label[0].description
+else:
+    pred_cls = None
+print(pred_cls)
+
+for temp_attack_layer_idx in internal:
+    
+    if temp_attack_layer_idx != 12 and temp_attack_layer_idx != 14:
+        continue
+    
+    print('temp_attack_layer_idx: ', temp_attack_layer_idx)
+    adv, info_dict = attack(image, attack_layer_idx=temp_attack_layer_idx, internal=internal, test_steps=200, gt_label=pred_cls)
+    print(info_dict)
+    adv_np = variable_to_numpy(adv)
+    linf = int(np.max(abs(image_np - adv_np)) * 255)
+    print('linf: ', linf)
+    l1 = np.mean(abs(image_np - adv_np)) * 255
+    print('l1: ', l1)
+    l2 = np.sqrt(np.mean(np.multiply((image_np * 255 - adv_np * 255), (image_np * 255 - adv_np * 255))))
+    print('l2: ', l2)
+
+
+'''
 model = torchvision.models.vgg16(pretrained=True).cuda()
-attack = MomentumIteratorAttack(model, decay_factor=0, epsilon=16/255, steps=8, step_size=4/255, random_start=False)
-#attack = LinfPGDAttack(model, epsilon=16/255, k=8, a=4/255, random_start=False)
-
-image_np_nchw = np.expand_dims((np.transpose(np.array(image), (2, 0, 1))).astype(np.float32), axis=0) / 255
-image_torch_nchw = torch.from_numpy(image_np_nchw).float()
-
+attack = MomentumIteratorAttack(model, decay_factor=0.5, epsilon=60./255, steps=1000, step_size=1./255, random_start=False)
+image_torch_nchw = torch.from_numpy(np.expand_dims(image_np, axis=0)).float()
 pred_nat = model(image_torch_nchw.cuda()).detach().cpu().numpy()
-print('Pred. nat. : ', np.argmax(pred_nat))
-
 label = np.argmax(pred_nat)
 label_tensor = torch.tensor(np.array([label]))
-image_adv = attack(image_torch_nchw, label_tensor)
-pred_adv = model(image_adv.cuda()).detach().cpu().numpy()
-print('Pred. adv. : ', np.argmax(pred_adv))
+adv = attack(image_torch_nchw, label_tensor)
+adv_np = variable_to_numpy(adv)
+Image.fromarray(np.transpose((adv_np * 255).astype(np.uint8), (1, 2, 0))).save('./out/3.jpg')
+google_label = detect_label_file('./out/3.jpg')
+if len(google_label) > 0:
+    pred_cls = google_label[0].description
+else:
+    pred_cls = None
+print(pred_cls)
 
-image_ori_pil = Image.fromarray((np.transpose(image_torch_nchw[0].detach().cpu().numpy(), (1, 2, 0)) * 255).astype(np.uint8))
-image_ori_pil.save('test_ori_out.png')
-image_adv_pil = Image.fromarray((np.transpose(image_adv[0].detach().cpu().numpy(), (1, 2, 0)) * 255).astype(np.uint8))
-image_adv_pil.save('test_adv_out.png')
-
+linf = int(np.max(abs(image_np - adv_np)) * 255)
+print('linf: ', linf)
+l1 = np.mean(abs(image_np - adv_np)) * 255
+print('l1: ', l1)
+l2 = np.sqrt(np.mean(np.multiply((image_np * 255 - adv_np * 255), (image_np * 255 - adv_np * 255))))
+print('l2: ', l2)
+'''
