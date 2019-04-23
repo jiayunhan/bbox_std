@@ -12,30 +12,29 @@ from api_utils import detect_label_numpy
 import numpy as np
 import torchvision
 from api_utils import detect_label_file
+from tqdm import tqdm
 import os
 import pdb
 
 # Resnet152 [4, 5, 6, 7]
 # Vgg16 [2, 7, 14, 21, 28]
 
-# attack success rate      std_opt_12      std_opt_14      std_12      std_14      mi-fgsm
-#           budget=16        0.72             0.77                                   0.59
-#           budget=32        0.98             0.98                                   0.89
+with open('labels.txt','r') as inf:
+    imagenet_dict = eval(inf.read())
 
-
-dataset_dir = "/home/yantao/datasets/imagenet_100image/"
+dataset_dir = "/home/yantao/datasets/ILSVRC/Data/DET/test"
+write_image_dir='./out/DispersionAttack_opt_out'
 images_name = os.listdir(dataset_dir)
-
-
 
 model = Vgg16()
 internal = [i for i in range(29)]
-#attack = DispersionAttack(model, epsilon=32./255, step_size=1./255, steps=2000, test_api=True)
-attack = DispersionAttack_opt(model, epsilon=32./255, steps=2000, test_api=True)
+test_model = torchvision.models.inception_v3(pretrained='imagenet').cuda().eval()
+#attack = DispersionAttack(model, epsilon=16./255, step_size=1./255, steps=2000, test_api=True)
+attack = DispersionAttack_opt(model, epsilon=16./255, steps=2000, is_test_model=True)
 
-total_samples = 100
+total_samples = len(images_name)
 success_attacks = 0
-for idx, temp_image_name in enumerate(images_name):
+for idx, temp_image_name in enumerate(tqdm(images_name)):
     print('idx: ', idx)
     temp_image_path = os.path.join(dataset_dir, temp_image_name)
     image_np = load_image(data_format='channels_first', abs_path=True, fpath=temp_image_path)
@@ -43,28 +42,26 @@ for idx, temp_image_name in enumerate(images_name):
 
     adv = image
 
-    adv_np = variable_to_numpy(adv)
-    Image.fromarray(np.transpose((adv_np * 255).astype(np.uint8), (1, 2, 0))).save('./out/ori.jpg')
-    google_label = detect_label_file('./out/ori.jpg')
+    pred_nat = test_model(adv).detach().cpu().numpy()
+    gt_label = np.argmax(pred_nat)
 
-    if len(google_label) > 0:
-        pred_cls = google_label[0].description
-    else:
-        pred_cls = None
+    pred_cls = imagenet_dict[gt_label]
     print(pred_cls)
 
-    temp_attack_success = 0
     adv, info_dict = attack(image, 
-                            attack_layer_idx=12, 
+                            attack_layer_idx=14, 
                             internal=internal, 
-                            test_steps=200, 
-                            gt_label=pred_cls)
-    print(info_dict)
-
-    output_cls = info_dict['det_label']
-    if(output_cls != pred_cls):
-        success_attacks += 1
-    
+                            test_steps=500, 
+                            gt_label=gt_label,
+                            test_model=test_model)
+    if bool(info_dict):
+        output_label = info_dict['det_label']
+        output_cls = imagenet_dict[output_label]
+        print(output_cls)
+        if(gt_label != output_label):
+            success_attacks += 1
+    else:
+        print("Attack failed.")
     adv_np = variable_to_numpy(adv)
     linf = int(np.max(abs(image_np - adv_np)) * 255)
     print('linf: ', linf)
@@ -72,6 +69,10 @@ for idx, temp_image_name in enumerate(images_name):
     print('l1: ', l1)
     l2 = np.sqrt(np.mean(np.multiply((image_np * 255 - adv_np * 255), (image_np * 255 - adv_np * 255))))
     print('l2: ', l2)
+    print(" ")
+    print('success_attacks: ', success_attacks)
+
+    
 
 print('attack success rate: ', float(success_attacks) / float(total_samples))
 
