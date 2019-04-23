@@ -9,7 +9,7 @@ from api_utils import detect_label_file
 import pdb
 
 class DispersionAttack(object):
-    def __init__(self, model, epsilon=1, step_size=0.004, steps=100, regularization_weight=1, test_api=False):
+    def __init__(self, model, epsilon=1, step_size=0.004, steps=100, regularization_weight=0, test_api=False):
         
         self.step_size = step_size
         self.epsilon = epsilon
@@ -18,7 +18,7 @@ class DispersionAttack(object):
         self.regularization_weight = regularization_weight
         self.test_api = test_api
 
-    def __call__(self, X_nat, attack_layer_idx=-1, internal=[], test_steps=50, gt_label=None):
+    def __call__(self, X_nat, attack_layer_idx=-1, internal=[], test_steps=100, gt_label=None):
         """
         Given examples (X_nat, y), returns adversarial
         examples within epsilon of X_nat in l_infinity norm.
@@ -43,20 +43,20 @@ class DispersionAttack(object):
             X_var.grad.zero_()
 
             X += self.step_size * np.sign(grad)
-            #X = np.clip(X, X_nat_np - self.epsilon, X_nat_np + self.epsilon)
+            X = np.clip(X, X_nat_np - self.epsilon, X_nat_np + self.epsilon)
             X = np.clip(X, 0, 1) # ensure valid pixel range
 
             if self.test_api and i % test_steps == 0:
                 adv_np = X
-                Image.fromarray(np.transpose((adv_np[0] * 255.).astype(np.uint8), (1, 2, 0))).save('./out/temp.jpg')
-                google_label = detect_label_file('./out/temp.jpg')
+                Image.fromarray(np.transpose((adv_np[0] * 255.).astype(np.uint8), (1, 2, 0))).save('./out/temp_dispersion.jpg')
+                google_label = detect_label_file('./out/temp_dispersion.jpg')
                 if len(google_label) > 0:
                     pred_cls = google_label[0].description
                 else:
                     pred_cls = 'none'
 
                 if gt_label is not None:
-                    if gt_label != pred_cls:
+                    if gt_label != pred_cls and gt_label != 'none':
                         info_dict['end_epoch'] = i
                         info_dict['det_label'] = pred_cls
                         info_dict['loss'] = loss.detach().cpu().numpy()
@@ -103,7 +103,7 @@ class DispersionAttack_opt(object):
             logit = internal_logits[attack_layer_idx]
             loss = -1 * logit.std() + 0. * cls_loss + self.regularization_weight * F.l1_loss(X_nat_var, X_var, reduction='mean')
             loss.backward()
-            print(loss)
+            #print(loss)
 
             grad = X_var.grad.data.cpu().numpy()
             X += optimizer(grad, learning_rate=self.learning_rate)
@@ -113,8 +113,8 @@ class DispersionAttack_opt(object):
 
             if self.test_api and i % test_steps == 0:
                 adv_np = X
-                Image.fromarray(np.transpose((adv_np[0] * 255.).astype(np.uint8), (1, 2, 0))).save('./out/temp.jpg')
-                google_label = detect_label_file('./out/temp.jpg')
+                Image.fromarray(np.transpose((adv_np[0] * 255.).astype(np.uint8), (1, 2, 0))).save('./out/temp_dispersion_opt.jpg')
+                google_label = detect_label_file('./out/temp_dispersion_opt.jpg')
                 if len(google_label) > 0:
                     pred_cls = google_label[0].description
                 else:

@@ -6,7 +6,7 @@ import os
 
 def load_image(
         shape=(224, 224), bounds=(0, 1), dtype=np.float32,
-        data_format='channels_last', fname='example.png'):
+        data_format='channels_last', fname='example.png', abs_path=False, fpath=None):
     """ Returns a resized image of target fname.
 
     Parameters
@@ -22,9 +22,14 @@ def load_image(
         The example image in bounds (0, 255) or (0, 1)
         depending on bounds parameter
     """
+    if abs_path == True:
+        assert fpath is not None, "fpath has not to be None when abs_path is True."
     assert len(shape) == 2
     assert data_format in ['channels_first', 'channels_last']
-    path = os.path.join(os.path.dirname(__file__), 'images/%s' % fname)
+    if not abs_path:
+        path = os.path.join(os.path.dirname(__file__), 'images/%s' % fname)
+    else:
+        path = fpath
     image = Image.open(path)
     image = image.resize(shape)
     image = np.asarray(image, dtype=dtype)
