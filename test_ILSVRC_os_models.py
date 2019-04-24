@@ -19,6 +19,14 @@ import pdb
 # Resnet152 [4, 5, 6, 7]
 # Vgg16 [2, 7, 14, 21, 28]
 
+result_file = 'ILSVRC_result.txt'
+visited_image_names = []
+if os.path.exists(result_file):
+    with open(result_file, 'r') as txt_file:
+        lines = txt_file.read().split('\n')
+        for line in lines:
+            visited_image_names.append(line.split(',')[0])
+    
 with open('labels.txt','r') as inf:
     imagenet_dict = eval(inf.read())
 
@@ -36,6 +44,9 @@ total_samples = len(images_name)
 success_attacks = 0
 for idx, temp_image_name in enumerate(tqdm(images_name)):
     print('idx: ', idx)
+    if temp_image_name in visited_image_names:
+        print('visited.')
+        continue
     temp_image_path = os.path.join(dataset_dir, temp_image_name)
     image_np = load_image(data_format='channels_first', abs_path=True, fpath=temp_image_path)
     image = numpy_to_variable(image_np)
@@ -60,8 +71,15 @@ for idx, temp_image_name in enumerate(tqdm(images_name)):
         print(output_cls)
         if(gt_label != output_label):
             success_attacks += 1
+            with open(result_file, 'a') as txt_file:
+                txt_file.write(temp_image_name + "," + "success\n")
+        else:
+            with open(result_file, 'a') as txt_file:
+                txt_file.write(temp_image_name + "," + "fail\n")
     else:
         print("Attack failed.")
+        with open(result_file, 'a') as txt_file:
+            txt_file.write(temp_image_name + "," + "fail\n")
     adv_np = variable_to_numpy(adv)
     linf = int(np.max(abs(image_np - adv_np)) * 255)
     print('linf: ', linf)

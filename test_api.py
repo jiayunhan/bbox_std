@@ -9,7 +9,7 @@ from models.resnet import Resnet152
 from attacks.dispersion import DispersionAttack
 from attacks.mifgsm import MomentumIteratorAttack
 from api_utils import detect_label_numpy, detect_text_numpy, detect_text_file
-from api_utils import detect_safe_search_numpy, detect_objects_numpy, detect_faces_numpy, detect_faces_file
+from api_utils import detect_safe_search_numpy, detect_objects_numpy, detect_faces_numpy, detect_faces_file, detect_objects_file
 import numpy as np
 import torchvision
 import pdb
@@ -25,10 +25,13 @@ internal = [i for i in range(29)]
 attack = DispersionAttack(model, epsilon=60./255, step_size=1./255, steps=1000)
 adv = attack(image, internal=internal)
 adv_np = variable_to_numpy(adv)
-'''
 
 image = numpy_to_bytes(image_np)
 ret = detect_faces_numpy(image)
 # ret = detect_faces_file('images/porn2.jpg')
 print(ret)
 #save_image(adv_np)
+'''
+
+det_output = detect_objects_file('images/0000.png')
+pdb.set_trace()

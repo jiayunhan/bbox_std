@@ -32,6 +32,7 @@ def load_image(
         path = fpath
     image = Image.open(path)
     image = image.resize(shape)
+    image = image.convert('RGB')
     image = np.asarray(image, dtype=dtype)
     image = image[:, :, :3]
     assert image.shape == shape + (3,)

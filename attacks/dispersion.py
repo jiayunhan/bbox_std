@@ -4,12 +4,13 @@ from torch.autograd import Variable
 import torch
 import torch.nn.functional as F
 from PIL import Image
-from api_utils import detect_label_file
+from api_utils import detect_label_file, detect_objects_file
 import shutil
 from torch_utils import numpy_to_variable, variable_to_numpy
 import os
 
 import pdb
+
 
 class DispersionAttack(object):
     def __init__(self, model, epsilon=1, step_size=0.004, steps=100, regularization_weight=0, test_api=False):
@@ -66,6 +67,7 @@ class DispersionAttack(object):
                         return torch.from_numpy(X), info_dict
         return torch.from_numpy(X), info_dict
 
+
 class DispersionAttack_opt(object):
     def __init__(self, model, epsilon=0.063, learning_rate=5e-2, steps=100, regularization_weight=0, is_test_api=False, is_test_model=False):
         
@@ -79,7 +81,7 @@ class DispersionAttack_opt(object):
         self.loss_fn = torch.nn.CrossEntropyLoss().cuda()
         assert (self.is_test_api and self.is_test_model) == False, "At most one of the test can be activated."
 
-    def __call__(self, X_nat, attack_layer_idx=-1, internal=[], test_steps=50, gt_label=None, test_model=None):
+    def __call__(self, X_nat, attack_layer_idx=-1, internal=[], test_steps=50, gt_label=None, test_model=None, task='cls'):
         """
         Given examples (X_nat, y), returns adversarial
         examples within epsilon of X_nat in l_infinity norm.
@@ -117,33 +119,42 @@ class DispersionAttack_opt(object):
             X = np.clip(X, 0, 1) # ensure valid pixel range
 
             if self.is_test_model and i % test_steps == 0:
-                adv_np = X
-                adv_var = torch.from_numpy(adv_np).cuda()
-                pred = test_model(adv_var).detach().cpu().numpy()
-                pred_label = np.argmax(pred)
-                if gt_label is not None:
-                    if gt_label != pred_label:
-                        info_dict['end_epoch'] = i
-                        info_dict['det_label'] = pred_label
-                        info_dict['loss'] = loss.detach().cpu().numpy()
-                        return torch.from_numpy(X), info_dict
+                if task == 'cls':
+                    adv_np = X
+                    adv_var = torch.from_numpy(adv_np).cuda()
+                    pred = test_model(adv_var).detach().cpu().numpy()
+                    pred_label = np.argmax(pred)
+                    if gt_label is not None:
+                        if gt_label != pred_label:
+                            info_dict['end_epoch'] = i
+                            info_dict['det_label'] = pred_label
+                            info_dict['loss'] = loss.detach().cpu().numpy()
+                            return torch.from_numpy(X), info_dict
 
             if self.is_test_api and i % test_steps == 0:
-                adv_np = X
-                Image.fromarray(np.transpose((adv_np[0] * 255.).astype(np.uint8), (1, 2, 0))).save('./out/temp_dispersion_opt.jpg')
-                google_label = detect_label_file('./out/temp_dispersion_opt.jpg')
-                if len(google_label) > 0:
-                    pred_cls = google_label[0].description
-                else:
-                    pred_cls = 'none'
+                if task == 'cls':
+                    adv_np = X
+                    Image.fromarray(np.transpose((adv_np[0] * 255.).astype(np.uint8), (1, 2, 0))).save('./out/temp_dispersion_opt.jpg')
+                    google_label = detect_label_file('./out/temp_dispersion_opt.jpg')
+                    if len(google_label) > 0:
+                        pred_cls = google_label[0].description
+                    else:
+                        pred_cls = 'none'
 
-                if gt_label is not None:
-                    if gt_label != pred_cls and gt_label != 'none':
-                        info_dict['end_epoch'] = i
-                        info_dict['det_label'] = pred_cls
-                        info_dict['loss'] = loss.detach().cpu().numpy()
-                        return torch.from_numpy(X), info_dict
+                    if gt_label is not None:
+                        if gt_label != pred_cls and gt_label != 'none':
+                            info_dict['end_epoch'] = i
+                            info_dict['det_label'] = pred_cls
+                            info_dict['loss'] = loss.detach().cpu().numpy()
+                            return torch.from_numpy(X), info_dict
+                elif task == 'det':
+                    adv_np = X
+                    Image.fromarray(np.transpose((adv_np[0] * 255.).astype(np.uint8), (1, 2, 0))).save('./out/temp_dispersion_opt.jpg')
+                    google_label = detect_objects_file('./out/temp_dispersion_opt.jpg')
+                    
+
         return torch.from_numpy(X), info_dict
+
 
 class AdamOptimizer:
     """Basic Adam optimizer implementation that can minimize w.r.t.

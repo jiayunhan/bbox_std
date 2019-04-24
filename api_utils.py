@@ -53,9 +53,11 @@ def detect_objects_file(path):
     with open(path, 'rb') as image_file:
         content = image_file.read()
     image = vision.types.Image(content=content)
-
-    objects = client.object_localization(
-        image=image).localized_object_annotations
+    try:
+        objects = client.object_localization(
+            image=image).localized_object_annotations
+    except:
+        objects = None
 
     '''
     print('Number of objects found: {}'.format(len(objects)))
