@@ -8,7 +8,7 @@ from models.vgg import Vgg16
 from models.resnet import Resnet152
 from attacks.dispersion import DispersionAttack
 from attacks.mifgsm import MomentumIteratorAttack
-from api_utils import detect_label_numpy, detect_text_numpy, detect_text_file
+from api_utils import detect_label_numpy, detect_text_numpy, detect_text_file, googleDet_to_Dictionary
 from api_utils import detect_safe_search_numpy, detect_objects_numpy, detect_faces_numpy, detect_faces_file, detect_objects_file
 import numpy as np
 import torchvision
@@ -34,4 +34,17 @@ print(ret)
 '''
 
 det_output = detect_objects_file('images/0000.png')
-pdb.set_trace()
+output_dic = googleDet_to_Dictionary(det_output, [224, 224])
+print(output_dic)
+
+bbox_list = output_dic['boxes']
+
+from PIL import Image, ImageFont, ImageDraw, ImageEnhance
+
+source_img = Image.open('images/0000.png').convert("RGB").resize((224, 224))
+
+draw = ImageDraw.Draw(source_img)
+for top, left, bottom, right in bbox_list:
+    draw.rectangle([int(left), int(top), int(right), int(bottom)])
+
+#source_img.save('temp.jpg')

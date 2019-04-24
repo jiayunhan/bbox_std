@@ -109,4 +109,16 @@ def draw_boxes(image, labels, boxes):
     
     image.show()
 
+def save_bbox_img(img, bbox_list, from_path=True, out_file='temp.jpg'):
+    from PIL import Image, ImageDraw
 
+    if from_path:
+        source_img = Image.open(img).convert("RGB")
+    else:
+        source_img = Image.fromarray(img)
+
+    draw = ImageDraw.Draw(source_img)
+    for top, left, bottom, right in bbox_list:
+        draw.rectangle([int(left), int(top), int(right), int(bottom)])
+
+    source_img.save(out_file)

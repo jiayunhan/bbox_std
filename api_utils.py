@@ -181,3 +181,35 @@ def detect_faces_file(path):
                     for vertex in face.bounding_poly.vertices])
 
         print('face bounds: {}'.format(','.join(vertices)))
+
+def googleDet_to_Dictionary(google_det, image_hw):
+    '''transfer google object detection output to dictrionary of lists.
+    Output:
+        {
+            'boxes' : [[top, left, bottom, right], ...]
+            'scores' : [float, ...]
+            'classes' : [int, ...]
+        }
+
+    '''
+    H, W = image_hw
+    dic_out = {}
+    if google_det is None or len(google_det) == 0:
+        return dic_out
+    boxes_list = []
+    scores_list = []
+    classes_list = []
+    for temp_det in google_det:
+        temp_name = temp_det.name
+        temp_score = temp_det.score
+        left = temp_det.bounding_poly.normalized_vertices[0].x * W
+        top = temp_det.bounding_poly.normalized_vertices[0].y * H
+        right = temp_det.bounding_poly.normalized_vertices[2].x * W
+        bottom = temp_det.bounding_poly.normalized_vertices[2].y * H
+        boxes_list.append([top, left, bottom, right])
+        scores_list.append(temp_score)
+        classes_list.append(temp_name)
+    dic_out['boxes'] = boxes_list
+    dic_out['scores'] = scores_list
+    dic_out['classes'] = classes_list
+    return dic_out
