@@ -166,21 +166,22 @@ def detect_faces_file(path):
 
     response = client.face_detection(image=image)
     faces = response.face_annotations
-    print(len(faces))
-    # Names of likelihood from google.cloud.vision.enums
-    likelihood_name = ('UNKNOWN', 'VERY_UNLIKELY', 'UNLIKELY', 'POSSIBLE',
-                       'LIKELY', 'VERY_LIKELY')
-    print('Faces:')
 
+    out_dic = {}
+    out_dic['classes'] = []
+    out_dic['boxes'] = []
+    out_dic['scores'] = []
     for face in faces:
-        print('anger: {}'.format(likelihood_name[face.anger_likelihood]))
-        print('joy: {}'.format(likelihood_name[face.joy_likelihood]))
-        print('surprise: {}'.format(likelihood_name[face.surprise_likelihood]))
-
-        vertices = (['({},{})'.format(vertex.x, vertex.y)
-                    for vertex in face.bounding_poly.vertices])
-
-        print('face bounds: {}'.format(','.join(vertices)))
+        out_dic['classes'].append('face')
+        top = face.bounding_poly.vertices[0].y
+        left = face.bounding_poly.vertices[0].x
+        bottom = face.bounding_poly.vertices[2].y
+        right = face.bounding_poly.vertices[2].x
+        bbox = [top, left, bottom, right]
+        out_dic['boxes'].append(bbox)
+        out_dic['scores'].append(face.detection_confidence)
+    return out_dic
+    
 
 def googleDet_to_Dictionary(google_det, image_hw):
     '''transfer google object detection output to dictrionary of lists.

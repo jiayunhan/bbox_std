@@ -16,8 +16,9 @@ from tqdm import tqdm
 import os
 import pdb
 
-# Resnet152 [4, 5, 6, 7]
-# Vgg16 [2, 7, 14, 21, 28]
+# attack success rate       dispersion_opt_14_budget_16
+#     inception_v3                0.6893(2307/3347)
+#     densenet121
 
 result_file = 'ILSVRC_result.txt'
 visited_image_names = []
@@ -31,12 +32,11 @@ with open('labels.txt','r') as inf:
     imagenet_dict = eval(inf.read())
 
 dataset_dir = "/home/yantao/datasets/ILSVRC/Data/DET/test"
-write_image_dir='./out/DispersionAttack_opt_out'
 images_name = os.listdir(dataset_dir)
 
 model = Vgg16()
 internal = [i for i in range(29)]
-test_model = torchvision.models.inception_v3(pretrained='imagenet').cuda().eval()
+test_model = torchvision.models.densenet121(pretrained='imagenet').cuda().eval()
 #attack = DispersionAttack(model, epsilon=16./255, step_size=1./255, steps=2000, test_api=True)
 attack = DispersionAttack_opt(model, epsilon=16./255, steps=2000, is_test_model=True)
 

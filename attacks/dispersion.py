@@ -82,7 +82,7 @@ class DispersionAttack_opt(object):
         self.loss_fn = torch.nn.CrossEntropyLoss().cuda()
         assert (self.is_test_api and self.is_test_model) == False, "At most one of the test can be activated."
 
-    def __call__(self, X_nat, attack_layer_idx=-1, internal=[], test_steps=50, gt_label=None, test_model=None):
+    def __call__(self, X_nat, attack_layer_idx=-1, internal=[], test_steps=None, gt_label=None, test_model=None):
         """
         Given examples (X_nat, y), returns adversarial
         examples within epsilon of X_nat in l_infinity norm.
