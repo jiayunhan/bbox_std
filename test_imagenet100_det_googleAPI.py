@@ -11,14 +11,15 @@ from models.vgg import Vgg16
 from models.resnet import Resnet152
 from attacks.dispersion import DispersionAttack_opt, DispersionAttack
 from attacks.mifgsm import MomentumIteratorAttack
+from attacks.DIM import DIM_Attack
 from mAP import save_detection_to_file, calculate_mAP_from_files
 from tqdm import tqdm
 
 import pdb
 
-# mAP       dispersion_opt_14       mi-FGSM
-# budget=16       32.5               42.06
-# budget=32       16.25              13.95
+# mAP       dispersion_opt_14       mi-FGSM(m=0.5)         DIM(m=0.5)       mi-FGSM(m=1.0)      DIM(m=1.0)
+# budget=16       32.5               42.06                  40.89                                 36.52
+# budget=32       16.25              13.95()                32.61                                 22.34
 
 
 dataset_dir = "/home/yantao/datasets/imagenet_100image/"
@@ -80,7 +81,9 @@ for idx, temp_image_name in enumerate(tqdm(images_name)):
 
 
 model = torchvision.models.vgg16(pretrained=True).cuda()
-attack = MomentumIteratorAttack(model, decay_factor=0.5, epsilon=16./255, steps=2000, step_size=1./255, random_start=False)
+#attack = MomentumIteratorAttack(model, decay_factor=1, epsilon=16./255, steps=2000, step_size=1./255, random_start=False)
+attack = DIM_Attack(model, decay_factor=1, prob=0.5, epsilon=16./255, steps=20, step_size=2./255, image_resize=330, random_start=False) #steps=min(epsilon+4, epsilon*1.25)
+
 
 total_samples = 100
 for idx, temp_image_name in enumerate(tqdm(images_name)):
