@@ -1,5 +1,6 @@
 import torchvision.models as models
 import torch
+from tqdm import tqdm
 from PIL import Image
 from image_utils import load_image, save_image
 from torch_utils import numpy_to_variable, variable_to_numpy
@@ -8,6 +9,7 @@ from models.vgg import Vgg16
 from models.resnet import Resnet152
 from attacks.dispersion import DispersionAttack_opt, DispersionAttack
 from attacks.mifgsm import MomentumIteratorAttack
+from attacks.DIM import DIM_Attack
 from api_utils import detect_label_numpy
 import numpy as np
 import torchvision
@@ -18,16 +20,17 @@ import pdb
 # Resnet152 [4, 5, 6, 7]
 # Vgg16 [2, 7, 14, 21, 28]
 
-# attack success rate      std_opt_12      std_opt_14      std_12      std_14      mi-fgsm
-#           budget=16        0.72             0.77          0.77        0.71         0.59
-#           budget=32        0.98             0.98          0.91        0.92         0.89
+# attack success rate      std_opt_12      std_opt_14      std_12      std_14      mi-fgsm      DIM
+#           budget=16        0.72             0.77          0.77        0.71         0.59(running)       0.56
+#           budget=32        0.98             0.98          0.91        0.92         0.89()       0.70
 
 
 dataset_dir = "/home/yantao/datasets/imagenet_100image/"
 images_name = os.listdir(dataset_dir)
 
 
-
+'''
+# dispersion(opt) attack
 model = Vgg16()
 internal = [i for i in range(29)]
 attack = DispersionAttack(model, epsilon=16./255, step_size=1./255, steps=2000, test_api=True)
@@ -35,7 +38,7 @@ attack = DispersionAttack(model, epsilon=16./255, step_size=1./255, steps=2000, 
 
 total_samples = 100
 success_attacks = 0
-for idx, temp_image_name in enumerate(images_name):
+for idx, temp_image_name in enumerate(tqdmimages_name)):
     print('idx: ', idx)
     temp_image_path = os.path.join(dataset_dir, temp_image_name)
     image_np = load_image(data_format='channels_first', abs_path=True, fpath=temp_image_path)
@@ -77,20 +80,20 @@ for idx, temp_image_name in enumerate(images_name):
     print('l2: ', l2)
 
 print('attack success rate: ', float(success_attacks) / float(total_samples))
-
-
 '''
+
+
+# mi-FGSM/DMI attack
 model = torchvision.models.vgg16(pretrained=True).cuda()
-attack = MomentumIteratorAttack(model, decay_factor=1.0, epsilon=16./255, steps=2000, step_size=1./255, random_start=False)
+#attack = MomentumIteratorAttack(model, decay_factor=0.5, epsilon=16./255, steps=2000, step_size=1./255, random_start=False)
+attack = DIM_Attack(model, decay_factor=0.5, prob=0.5, epsilon=32./255, steps=20, step_size=2./255, image_resize=330, random_start=False) #steps=min(epsilon+4, epsilon*1.25)
 
 total_samples = 100
 success_attacks = 0
-for idx, temp_image_name in enumerate(images_name):
+for idx, temp_image_name in enumerate(tqdm(images_name)):
     print('idx: ', idx)
-
     temp_image_path = os.path.join(dataset_dir, temp_image_name)
     image_np = load_image(data_format='channels_first', abs_path=True, fpath=temp_image_path)
-
     Image.fromarray(np.transpose((image_np * 255).astype(np.uint8), (1, 2, 0))).save('./out/ori.jpg')
     google_label = detect_label_file('./out/ori.jpg')
     if len(google_label) > 0:
@@ -98,7 +101,6 @@ for idx, temp_image_name in enumerate(images_name):
     else:
         pred_cls = None
     print(pred_cls)
-
     image_torch_nchw = torch.from_numpy(np.expand_dims(image_np, axis=0)).float()
     pred_nat = model(image_torch_nchw.cuda()).detach().cpu().numpy()
     label = np.argmax(pred_nat)
@@ -113,7 +115,6 @@ for idx, temp_image_name in enumerate(images_name):
         output_cls = None
     print(output_cls)
     print(" ")
-
     adv_np = variable_to_numpy(adv)
     linf = int(np.max(abs(image_np - adv_np)) * 255)
     print('linf: ', linf)
@@ -122,9 +123,6 @@ for idx, temp_image_name in enumerate(images_name):
     l2 = np.sqrt(np.mean(np.multiply((image_np * 255 - adv_np * 255), (image_np * 255 - adv_np * 255))))
     print('l2: ', l2)
     print(" ")
-
     if output_cls != pred_cls:
         success_attacks += 1
-
 print('attack success rate: ', float(success_attacks) / float(total_samples))
-'''

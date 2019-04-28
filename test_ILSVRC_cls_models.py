@@ -16,9 +16,9 @@ from tqdm import tqdm
 import os
 import pdb
 
-# attack success rate       dispersion_opt_14_budget_16
-#     inception_v3                0.6893(2307/3347)
-#     densenet121
+# attack success rate       dispersion_opt_14_budget_16         dispersion_opt_3_budget_16
+#     inception_v3                0.6893(2307/3347)                     running
+#     densenet121                 0.8543(3980/4659)
 
 result_file = 'ILSVRC_result.txt'
 visited_image_names = []
@@ -36,7 +36,7 @@ images_name = os.listdir(dataset_dir)
 
 model = Vgg16()
 internal = [i for i in range(29)]
-test_model = torchvision.models.densenet121(pretrained='imagenet').cuda().eval()
+test_model = torchvision.models.inception_v3(pretrained='imagenet').cuda().eval()
 #attack = DispersionAttack(model, epsilon=16./255, step_size=1./255, steps=2000, test_api=True)
 attack = DispersionAttack_opt(model, epsilon=16./255, steps=2000, is_test_model=True)
 
@@ -60,7 +60,7 @@ for idx, temp_image_name in enumerate(tqdm(images_name)):
     print(pred_cls)
 
     adv, info_dict = attack(image, 
-                            attack_layer_idx=14, 
+                            attack_layer_idx=3, 
                             internal=internal, 
                             test_steps=500, 
                             gt_label=gt_label,

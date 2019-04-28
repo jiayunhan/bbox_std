@@ -7,7 +7,7 @@ import pdb
 
 class MomentumIteratorAttack(object):
     def __init__(self, model, decay_factor=1, epsilon=0.3, steps=40, step_size=0.01, 
-        random_start=True):
+        random_start=False):
         """
         The Momentum Iterative Fast Gradient Sign Method (Dong et al. 2017).
         This method won the first places in NIPS 2017 Non-targeted Adversarial
@@ -51,8 +51,7 @@ class MomentumIteratorAttack(object):
             loss.backward()
             grad = X_var.grad.data.cpu().numpy()
             X_var.grad.zero_()
-
-            velocity = grad / np.sum(grad)
+            velocity = grad / np.sum(np.absolute(grad))
             momentum = self.decay_factor * momentum + velocity
 
             X += self.step_size * np.sign(momentum)

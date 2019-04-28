@@ -6,7 +6,7 @@ from PIL import Image
 
 from image_utils import load_image, save_image, save_bbox_img, numpy_to_bytes
 from torch_utils import numpy_to_variable, variable_to_numpy
-from api_utils import detect_objects_file, googleDet_to_Dictionary
+from api_utils import detect_faces_file
 from models.vgg import Vgg16
 from models.resnet import Resnet152
 from attacks.dispersion import DispersionAttack_opt, DispersionAttack
@@ -17,18 +17,18 @@ from tqdm import tqdm
 import pdb
 
 # mAP       dispersion_opt_14       mi-FGSM
-# budget=16       32.5               42.06
-# budget=32       16.25              13.95
+# budget=16       
+# budget=32       
 
 
-dataset_dir = "/home/yantao/datasets/imagenet_100image/"
+dataset_dir = "/home/yantao/datasets/FDDB_100image/"
 images_name = os.listdir(dataset_dir)
 
-'''
+
 model = Vgg16()
 internal = [i for i in range(29)]
 #attack = DispersionAttack(model, epsilon=16./255, step_size=1./255, steps=2000, is_test_api=True)
-attack = DispersionAttack_opt(model, epsilon=32./255, steps=2000)
+attack = DispersionAttack_opt(model, epsilon=16./255, steps=2000)
 
 total_samples = 100
 for idx, temp_image_name in enumerate(tqdm(images_name)):
@@ -40,19 +40,17 @@ for idx, temp_image_name in enumerate(tqdm(images_name)):
 
     adv_np = variable_to_numpy(adv)
     Image.fromarray(np.transpose((adv_np * 255).astype(np.uint8), (1, 2, 0))).save('./out/ori.jpg')
-    google_label_ori = detect_objects_file('./out/ori.jpg')
-    google_label_ori = googleDet_to_Dictionary(google_label_ori, adv_np.shape[-2:])
+    google_label_ori = detect_faces_file('./out/ori.jpg')
     print(google_label_ori)
 
     adv, _ = attack(image, 
-                    attack_layer_idx=14, 
+                    attack_layer_idx=28, 
                     internal=internal
                     )
     adv_np = variable_to_numpy(adv)
 
     Image.fromarray(np.transpose((adv_np * 255).astype(np.uint8), (1, 2, 0))).save('./out/temp_adv.jpg')
-    google_label_pred = detect_objects_file('./out/temp_adv.jpg')
-    google_label_pred = googleDet_to_Dictionary(google_label_pred, adv_np.shape[-2:])
+    google_label_pred = detect_faces_file('./out/temp_adv.jpg')
     print(google_label_pred)
 
     save_detection_to_file(google_label_ori, os.path.join('out', 'DispersionAttack_opt_det_out', 'gt', temp_image_name_noext + '.txt'), 'ground_truth')
@@ -75,12 +73,12 @@ for idx, temp_image_name in enumerate(tqdm(images_name)):
     print('l2: ', l2)
 
     mAP_score = calculate_mAP_from_files('out/DispersionAttack_opt_det_out/gt', 'out/DispersionAttack_opt_det_out/pd')
+
+
+
 '''
-
-
-
 model = torchvision.models.vgg16(pretrained=True).cuda()
-attack = MomentumIteratorAttack(model, decay_factor=0.5, epsilon=16./255, steps=2000, step_size=1./255, random_start=False)
+attack = MomentumIteratorAttack(model, decay_factor=1.0, epsilon=32./255, steps=2000, step_size=1./255, random_start=False)
 
 total_samples = 100
 for idx, temp_image_name in enumerate(tqdm(images_name)):
@@ -92,8 +90,7 @@ for idx, temp_image_name in enumerate(tqdm(images_name)):
 
     adv_np = variable_to_numpy(adv)
     Image.fromarray(np.transpose((adv_np * 255).astype(np.uint8), (1, 2, 0))).save('./out/ori.jpg')
-    google_label_ori = detect_objects_file('./out/ori.jpg')
-    google_label_ori = googleDet_to_Dictionary(google_label_ori, adv_np.shape[-2:])
+    google_label_ori = detect_faces_file('./out/ori.jpg')
     print(google_label_ori)
 
     image_torch_nchw = torch.from_numpy(np.expand_dims(image_np, axis=0)).float()
@@ -103,8 +100,7 @@ for idx, temp_image_name in enumerate(tqdm(images_name)):
     adv = attack(image_torch_nchw, label_tensor)
     adv_np = variable_to_numpy(adv)
     Image.fromarray(np.transpose((adv_np * 255).astype(np.uint8), (1, 2, 0))).save('./out/temp_adv.jpg')
-    google_label_pred = detect_objects_file('./out/temp_adv.jpg')
-    google_label_pred = googleDet_to_Dictionary(google_label_pred, adv_np.shape[-2:])
+    google_label_pred = detect_faces_file('./out/temp_adv.jpg')
     print(google_label_pred)
 
     save_detection_to_file(google_label_ori, os.path.join('out', 'DispersionAttack_opt_det_out', 'gt', temp_image_name_noext + '.txt'), 'ground_truth')
@@ -127,6 +123,6 @@ for idx, temp_image_name in enumerate(tqdm(images_name)):
     print('l2: ', l2)
 
     mAP_score = calculate_mAP_from_files('out/DispersionAttack_opt_det_out/gt', 'out/DispersionAttack_opt_det_out/pd')
-
+'''
 
 
