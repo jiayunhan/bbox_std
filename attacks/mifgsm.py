@@ -56,5 +56,5 @@ class MomentumIteratorAttack(object):
 
             X += self.step_size * np.sign(momentum)
             X = np.clip(X, X_nat_np - self.epsilon, X_nat_np + self.epsilon)
-            X = np.clip(X, 0, 1) # ensure valid pixel range
+            X = np.clip(X, 0, 1)
         return torch.from_numpy(X)

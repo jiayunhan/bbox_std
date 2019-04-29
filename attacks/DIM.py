@@ -5,6 +5,7 @@ import torch
 
 import pdb
 
+
 class DIM_Attack(object):
     def __init__(self, model, 
                        decay_factor=1, prob=0.5,
@@ -68,6 +69,7 @@ class DIM_Attack(object):
             X = np.clip(X, X_nat_np - self.epsilon, X_nat_np + self.epsilon)
             X = np.clip(X, 0, 1) # ensure valid pixel range
         return torch.from_numpy(X)
+
 
 class _tranform_resize_padding(torch.nn.Module):
     def __init__(self, image_h, image_w, image_resize, resize_back=False):

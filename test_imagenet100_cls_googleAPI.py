@@ -21,7 +21,7 @@ import pdb
 # Vgg16 [2, 7, 14, 21, 28]
 
 # attack success rate      std_opt_12      std_opt_14      std_12      std_14      mi-fgsm(m=0.5)     DIM(m=0.5)    mi-fgsm(m=1.0)     DIM(m=1.0)
-#           budget=16        0.72             0.77          0.77        0.71         0.59()             0.52            ing               0.61
+#           budget=16        0.72             0.77          0.77        0.71         0.56               0.52            0.59              0.61
 #           budget=32        0.98             0.98          0.91        0.92         0.89()             0.64                              0.79
 
 
@@ -85,7 +85,7 @@ print('attack success rate: ', float(success_attacks) / float(total_samples))
 
 # mi-FGSM/DMI attack
 model = torchvision.models.vgg16(pretrained=True).cuda()
-attack = MomentumIteratorAttack(model, decay_factor=1.0, epsilon=16./255, steps=2000, step_size=1./255, random_start=False)
+attack = MomentumIteratorAttack(model, decay_factor=0.5, epsilon=16./255, steps=2000, step_size=1./255, random_start=False)
 #attack = DIM_Attack(model, decay_factor=1.0, prob=0.5, epsilon=32./255, steps=20, step_size=2./255, image_resize=330, random_start=False) #steps=min(epsilon+4, epsilon*1.25)
 
 total_samples = 100

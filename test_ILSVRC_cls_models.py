@@ -14,10 +14,11 @@ import torchvision
 from api_utils import detect_label_file
 from tqdm import tqdm
 import os
+import shutil
 import pdb
 
-# attack success rate       dispersion_opt_14_budget_16         dispersion_opt_3_budget_16
-#     inception_v3                0.6893(2307/3347)                     running
+# attack success rate       dispersion_opt_14_budget_16         dispersion_opt_3_budget_16          dispersion_opt_25_budget_16
+#     inception_v3                0.6893(2307/3347)                     (1128/2365)                             ing
 #     densenet121                 0.8543(3980/4659)
 
 result_file = 'ILSVRC_result.txt'
@@ -40,15 +41,24 @@ test_model = torchvision.models.inception_v3(pretrained='imagenet').cuda().eval(
 #attack = DispersionAttack(model, epsilon=16./255, step_size=1./255, steps=2000, test_api=True)
 attack = DispersionAttack_opt(model, epsilon=16./255, steps=2000, is_test_model=True)
 
-total_samples = len(images_name)
+#total_samples = len(images_name)
+total_samples = 1000
+
 success_attacks = 0
 for idx, temp_image_name in enumerate(tqdm(images_name)):
     print('idx: ', idx)
+    if idx >= 1000:
+        break
     if temp_image_name in visited_image_names:
         print('visited.')
         continue
     temp_image_path = os.path.join(dataset_dir, temp_image_name)
+
     image_np = load_image(data_format='channels_first', abs_path=True, fpath=temp_image_path)
+
+    image_pil = Image.fromarray(np.transpose((image_np * 255).astype(np.uint8), (1, 2, 0)))
+    image_pil.save(os.path.join("/home/yantao/datasets/ILSVRC1000/original", temp_image_name))
+
     image = numpy_to_variable(image_np)
 
     adv = image
@@ -60,11 +70,15 @@ for idx, temp_image_name in enumerate(tqdm(images_name)):
     print(pred_cls)
 
     adv, info_dict = attack(image, 
-                            attack_layer_idx=3, 
+                            attack_layer_idx=25, 
                             internal=internal, 
                             test_steps=500, 
                             gt_label=gt_label,
                             test_model=test_model)
+
+    adv_pil = Image.fromarray(np.transpose((adv[0].detach().numpy() * 255).astype(np.uint8), (1, 2, 0)))
+    adv_pil.save(os.path.join("/home/yantao/datasets/ILSVRC1000/adv_dispersion_opt_25", temp_image_name))
+
     if bool(info_dict):
         output_label = info_dict['det_label']
         output_cls = imagenet_dict[output_label]
