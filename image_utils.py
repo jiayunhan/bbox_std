@@ -2,7 +2,11 @@ from PIL import Image, ImageFont, ImageDraw
 import numpy as np
 from io import BytesIO
 from google.cloud.vision import types
+import matplotlib.pyplot as plt
+from tqdm import tqdm
 import os
+
+import pdb
 
 def load_image(
         shape=(224, 224), bounds=(0, 1), dtype=np.float32,
@@ -122,3 +126,16 @@ def save_bbox_img(img, bbox_list, from_path=True, out_file='temp.jpg'):
         draw.rectangle([int(left), int(top), int(right), int(bottom)])
 
     source_img.save(out_file)
+
+def visualize_features(intermediate_features, output_dir, file_prefix='', data_format='channels_last', image_size=(224, 224), only_first_channel=True):
+    if data_format == 'channels_last':
+        intermediate_features = np.transpose(intermediate_features, (2, 0, 1))
+    
+    for feature_idx, temp_feature in enumerate(tqdm(intermediate_features)):
+        if only_first_channel and feature_idx != 0:
+            break
+        temp_file_path = os.path.join(output_dir, file_prefix + '_{0:03d}.png'.format(feature_idx))
+        plt.imshow(temp_feature)
+        plt.colorbar()
+        plt.savefig(temp_file_path)
+        plt.close()
