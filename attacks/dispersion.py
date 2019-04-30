@@ -103,7 +103,9 @@ class DispersionAttack_opt(object):
         for i in range(self.steps):
             X_nat_var = Variable(torch.from_numpy(X_nat_np).cuda(), requires_grad=False, volatile=False)
             X_var = Variable(torch.from_numpy(X).cuda(), requires_grad=True, volatile=False)
+
             internal_logits, pred = self.model.prediction(X_var, internal=internal)
+
             if i == 0:
                 ori_label = torch.max(pred[0], 0)[1]
                 ori_label = ori_label.unsqueeze(0)

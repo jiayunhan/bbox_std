@@ -18,7 +18,7 @@ import shutil
 import pdb
 
 # attack success rate       dispersion_opt_14_budget_16         dispersion_opt_3_budget_16          dispersion_opt_25_budget_16
-#     inception_v3                0.6893(2307/3347)                     (1128/2365)                             ing
+#     inception_v3                0.6893(2307/3347)                     (1128/2365)                        0.645(645/1000)
 #     densenet121                 0.8543(3980/4659)
 
 result_file = 'ILSVRC_result.txt'

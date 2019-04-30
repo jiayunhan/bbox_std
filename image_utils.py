@@ -4,6 +4,7 @@ from io import BytesIO
 from google.cloud.vision import types
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+import cv2
 import os
 
 import pdb
@@ -136,6 +137,29 @@ def visualize_features(intermediate_features, output_dir, file_prefix='', data_f
             break
         temp_file_path = os.path.join(output_dir, file_prefix + '_{0:03d}.png'.format(feature_idx))
         plt.imshow(temp_feature)
+        plt.colorbar()
+        plt.savefig(temp_file_path)
+        plt.close()
+
+def visualize_features_compare(ori_features, adv_features, output_dir, file_prefix='', data_format='channels_last', image_size=(224, 224), only_first_channel=True):
+    if data_format == 'channels_last':
+        ori_features = np.transpose(ori_features, (2, 0, 1))
+        adv_features = np.transpose(adv_features, (2, 0, 1))
+
+    for feature_idx, (temp_ori_feature, temp_adv_feature) in enumerate(tqdm(zip(ori_features, adv_features))):
+        if only_first_channel and feature_idx != 0:
+            break
+        temp_file_path = os.path.join(output_dir, file_prefix + '_{0:03d}.png'.format(feature_idx))
+
+        temp_ori_feature = cv2.resize(temp_ori_feature, image_size)
+        temp_adv_feature = cv2.resize(temp_adv_feature, image_size)
+
+        fig=plt.figure()
+        fig.add_subplot(1, 3, 1)
+        plt.imshow(temp_ori_feature)
+        fig.add_subplot(1, 3, 2)
+        plt.imshow(temp_adv_feature)
+        fig.add_subplot(1, 3, 3)
         plt.colorbar()
         plt.savefig(temp_file_path)
         plt.close()

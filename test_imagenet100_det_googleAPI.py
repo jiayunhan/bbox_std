@@ -17,15 +17,21 @@ from tqdm import tqdm
 
 import pdb
 
-# mAP       dispersion_opt_14       mi-FGSM(m=0.5)         DIM(m=0.5)       mi-FGSM(m=1.0)      DIM(m=1.0)
-# budget=16       32.5               42.06                  40.89               42.62              36.52
-# budget=32       16.25              13.95(ing)                32.61               26.06              22.34
+# VGG16
+# mAP       dispersion_opt_12       dispersion_opt_14       mi-FGSM(m=0.5)         DIM(m=0.5)       mi-FGSM(m=1.0)      DIM(m=1.0)
+# budget=16       37.57                   32.88                 42.06                40.89               42.62              36.52
+# budget=32       20.48                   16.25                 24.34                32.61               26.06              22.34
+
+# resnet152
+# mAP       dispersion_opt_12       dispersion_opt_14       mi-FGSM(m=0.5)         DIM(m=0.5)       mi-FGSM(m=1.0)      DIM(m=1.0)
+# budget=16     
+# budget=32    
 
 
 dataset_dir = "/home/yantao/datasets/imagenet_100image/"
 images_name = os.listdir(dataset_dir)
 
-'''
+
 model = Vgg16()
 internal = [i for i in range(29)]
 #attack = DispersionAttack(model, epsilon=16./255, step_size=1./255, steps=2000, is_test_api=True)
@@ -46,7 +52,7 @@ for idx, temp_image_name in enumerate(tqdm(images_name)):
     print(google_label_ori)
 
     adv, _ = attack(image, 
-                    attack_layer_idx=14, 
+                    attack_layer_idx=12, 
                     internal=internal
                     )
     adv_np = variable_to_numpy(adv)
@@ -76,10 +82,10 @@ for idx, temp_image_name in enumerate(tqdm(images_name)):
     print('l2: ', l2)
 
     mAP_score = calculate_mAP_from_files('out/DispersionAttack_opt_det_out/gt', 'out/DispersionAttack_opt_det_out/pd')
+
+
+
 '''
-
-
-
 model = torchvision.models.vgg16(pretrained=True).cuda()
 attack = MomentumIteratorAttack(model, decay_factor=0.5, epsilon=32./255, steps=2000, step_size=1./255, random_start=False)
 #attack = DIM_Attack(model, decay_factor=1, prob=0.5, epsilon=16./255, steps=20, step_size=2./255, image_resize=330, random_start=False) #steps=min(epsilon+4, epsilon*1.25)
@@ -131,5 +137,5 @@ for idx, temp_image_name in enumerate(tqdm(images_name)):
 
     mAP_score = calculate_mAP_from_files('out/DispersionAttack_opt_det_out/gt', 'out/DispersionAttack_opt_det_out/pd')
 
-
+'''
 
