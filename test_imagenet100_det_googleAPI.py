@@ -23,8 +23,8 @@ import pdb
 # budget=32       20.48                   16.25                 24.34                32.61               26.06              22.34
 
 # resnet152
-# mAP       dispersion_opt_12       dispersion_opt_14       mi-FGSM(m=0.5)         DIM(m=0.5)       mi-FGSM(m=1.0)      DIM(m=1.0)
-# budget=16     
+# mAP       dispersion_opt_12       dispersion_opt_8       mi-FGSM(m=0.5)         DIM(m=0.5)       mi-FGSM(m=1.0)      DIM(m=1.0)
+# budget=16                                ing
 # budget=32    
 
 
@@ -32,10 +32,14 @@ dataset_dir = "/home/yantao/datasets/imagenet_100image/"
 images_name = os.listdir(dataset_dir)
 
 
-model = Vgg16()
-internal = [i for i in range(29)]
+#model = Vgg16()
+#internal = [i for i in range(29)]
+
+model = Resnet152()
+internal = [i for i in range(9)]
+
 #attack = DispersionAttack(model, epsilon=16./255, step_size=1./255, steps=2000, is_test_api=True)
-attack = DispersionAttack_opt(model, epsilon=32./255, steps=2000)
+attack = DispersionAttack_opt(model, epsilon=16./255, steps=2000)
 
 total_samples = 100
 for idx, temp_image_name in enumerate(tqdm(images_name)):
@@ -46,19 +50,19 @@ for idx, temp_image_name in enumerate(tqdm(images_name)):
     adv = image
 
     adv_np = variable_to_numpy(adv)
-    Image.fromarray(np.transpose((adv_np * 255).astype(np.uint8), (1, 2, 0))).save('./out/ori.jpg')
-    google_label_ori = detect_objects_file('./out/ori.jpg')
+    Image.fromarray(np.transpose((adv_np * 255).astype(np.uint8), (1, 2, 0))).save('./out/ori_det.jpg')
+    google_label_ori = detect_objects_file('./out/ori_det.jpg')
     google_label_ori = googleDet_to_Dictionary(google_label_ori, adv_np.shape[-2:])
     print(google_label_ori)
 
     adv, _ = attack(image, 
-                    attack_layer_idx=12, 
+                    attack_layer_idx=8, 
                     internal=internal
                     )
     adv_np = variable_to_numpy(adv)
 
-    Image.fromarray(np.transpose((adv_np * 255).astype(np.uint8), (1, 2, 0))).save('./out/temp_adv.jpg')
-    google_label_pred = detect_objects_file('./out/temp_adv.jpg')
+    Image.fromarray(np.transpose((adv_np * 255).astype(np.uint8), (1, 2, 0))).save('./out/temp_adv_det.jpg')
+    google_label_pred = detect_objects_file('./out/temp_adv_det.jpg')
     google_label_pred = googleDet_to_Dictionary(google_label_pred, adv_np.shape[-2:])
     print(google_label_pred)
 
@@ -66,13 +70,13 @@ for idx, temp_image_name in enumerate(tqdm(images_name)):
     save_detection_to_file(google_label_pred, os.path.join('out', 'DispersionAttack_opt_det_out', 'pd', temp_image_name_noext + '.txt'), 'detection')
 
     if google_label_ori:
-        save_bbox_img('./out/ori.jpg', google_label_ori['boxes'], out_file='temp_ori_box.jpg')
+        save_bbox_img('./out/ori_det.jpg', google_label_ori['boxes'], out_file='temp_ori_box.jpg')
     else:
-        save_bbox_img('./out/ori.jpg', [], out_file='temp_ori_box.jpg')
+        save_bbox_img('./out/ori_det.jpg', [], out_file='temp_ori_box.jpg')
     if google_label_pred:
-        save_bbox_img('./out/temp_adv.jpg', google_label_pred['boxes'], out_file='temp_adv_box.jpg')
+        save_bbox_img('./out/temp_adv_det.jpg', google_label_pred['boxes'], out_file='temp_adv_box.jpg')
     else:
-        save_bbox_img('./out/temp_adv.jpg', [], out_file='temp_adv_box.jpg')
+        save_bbox_img('./out/temp_adv_det.jpg', [], out_file='temp_adv_box.jpg')
 
     linf = int(np.max(abs(image_np - adv_np)) * 255)
     print('linf: ', linf)
