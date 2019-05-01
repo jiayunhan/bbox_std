@@ -24,7 +24,7 @@ import pdb
 
 # resnet152
 # mAP       dispersion_opt_12       dispersion_opt_8       mi-FGSM(m=0.5)         DIM(m=0.5)       mi-FGSM(m=1.0)      DIM(m=1.0)
-# budget=16                               33.33                                                         ing                46.70
+# budget=16                               33.33                                                         40.95              46.70
 # budget=32    
 
 
