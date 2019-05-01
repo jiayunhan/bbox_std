@@ -17,9 +17,11 @@ import os
 import shutil
 import pdb
 
-# attack success rate       dispersion_opt_14_budget_16         dispersion_opt_3_budget_16          dispersion_opt_25_budget_16
+# attack success rate       dispersion_opt_14_budget_16         dispersion_opt_3_budget_16          dispersion_opt_25_budget_16(got images)
 #     inception_v3                0.6893(2307/3347)                     (1128/2365)                        0.645(645/1000)
-#     densenet121                 0.8543(3980/4659)
+#     densenet121                 0.8543(3980/4659)                         ing
+#     retina
+#     yolo
 
 result_file = 'ILSVRC_result.txt'
 visited_image_names = []
@@ -37,7 +39,7 @@ images_name = os.listdir(dataset_dir)
 
 model = Vgg16()
 internal = [i for i in range(29)]
-test_model = torchvision.models.inception_v3(pretrained='imagenet').cuda().eval()
+test_model = torchvision.models.densenet121(pretrained='imagenet').cuda().eval()
 #attack = DispersionAttack(model, epsilon=16./255, step_size=1./255, steps=2000, test_api=True)
 attack = DispersionAttack_opt(model, epsilon=16./255, steps=2000, is_test_model=True)
 
@@ -56,8 +58,8 @@ for idx, temp_image_name in enumerate(tqdm(images_name)):
 
     image_np = load_image(data_format='channels_first', abs_path=True, fpath=temp_image_path)
 
-    image_pil = Image.fromarray(np.transpose((image_np * 255).astype(np.uint8), (1, 2, 0)))
-    image_pil.save(os.path.join("/home/yantao/datasets/ILSVRC1000/original", temp_image_name))
+    #image_pil = Image.fromarray(np.transpose((image_np * 255).astype(np.uint8), (1, 2, 0)))
+    #image_pil.save(os.path.join("/home/yantao/datasets/ILSVRC1000/original", temp_image_name))
 
     image = numpy_to_variable(image_np)
 
@@ -77,7 +79,7 @@ for idx, temp_image_name in enumerate(tqdm(images_name)):
                             test_model=test_model)
 
     adv_pil = Image.fromarray(np.transpose((adv[0].detach().numpy() * 255).astype(np.uint8), (1, 2, 0)))
-    adv_pil.save(os.path.join("/home/yantao/datasets/ILSVRC1000/adv_dispersion_opt_25", temp_image_name))
+    adv_pil.save(os.path.join("/home/yantao/datasets/ILSVRC1000/adv_dispersion_opt_3_vgg16", temp_image_name))
 
     if bool(info_dict):
         output_label = info_dict['det_label']

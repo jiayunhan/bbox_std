@@ -28,7 +28,7 @@ import pdb
 
 #      Resnet152
 # attack success rate      std_opt_12      std_opt_8      std_12      std_14      mi-fgsm(m=0.5)     DIM(m=0.5)    mi-fgsm(m=1.0)     DIM(m=1.0)
-#           budget=16                         0.75                                                                      ing              0.51
+#           budget=16                         0.75                                                                      0.53              0.51
 #           budget=32       
 
 dataset_dir = "/home/yantao/datasets/imagenet_100image/"

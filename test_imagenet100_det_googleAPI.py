@@ -24,14 +24,14 @@ import pdb
 
 # resnet152
 # mAP       dispersion_opt_12       dispersion_opt_8       mi-FGSM(m=0.5)         DIM(m=0.5)       mi-FGSM(m=1.0)      DIM(m=1.0)
-# budget=16                                ing
+# budget=16                               33.33                                                         ing                46.70
 # budget=32    
 
 
 dataset_dir = "/home/yantao/datasets/imagenet_100image/"
 images_name = os.listdir(dataset_dir)
 
-
+'''
 #model = Vgg16()
 #internal = [i for i in range(29)]
 
@@ -86,12 +86,14 @@ for idx, temp_image_name in enumerate(tqdm(images_name)):
     print('l2: ', l2)
 
     mAP_score = calculate_mAP_from_files('out/DispersionAttack_opt_det_out/gt', 'out/DispersionAttack_opt_det_out/pd')
-
-
-
 '''
-model = torchvision.models.vgg16(pretrained=True).cuda()
-attack = MomentumIteratorAttack(model, decay_factor=0.5, epsilon=32./255, steps=2000, step_size=1./255, random_start=False)
+
+
+
+#model = torchvision.models.vgg16(pretrained=True).cuda()
+model = torchvision.models.resnet152(pretrained=True).cuda()
+
+attack = MomentumIteratorAttack(model, decay_factor=1.0, epsilon=16./255, steps=2000, step_size=1./255, random_start=False)
 #attack = DIM_Attack(model, decay_factor=1, prob=0.5, epsilon=16./255, steps=20, step_size=2./255, image_resize=330, random_start=False) #steps=min(epsilon+4, epsilon*1.25)
 
 
@@ -141,5 +143,5 @@ for idx, temp_image_name in enumerate(tqdm(images_name)):
 
     mAP_score = calculate_mAP_from_files('out/DispersionAttack_opt_det_out/gt', 'out/DispersionAttack_opt_det_out/pd')
 
-'''
+
 
