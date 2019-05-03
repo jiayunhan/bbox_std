@@ -1,12 +1,15 @@
 import torchvision.models as models
 import torch
 
+import pdb
+
 class Vgg16(torch.nn.Module):
     def __init__(self):
         super(Vgg16, self).__init__()
         self.model = models.vgg16(pretrained=True).cuda().eval()
         features = list(self.model.features)
         self.features = torch.nn.ModuleList(features).cuda().eval()
+        pdb.set_trace()
 
     def prediction(self, x, internal=[]):
         pred = self.model(x)
@@ -21,4 +24,5 @@ class Vgg16(torch.nn.Module):
                 layers.append(x)
         return layers, pred
 
-
+if __name__ == "__main__":
+    Vgg16()

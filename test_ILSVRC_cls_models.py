@@ -17,19 +17,19 @@ import os
 import shutil
 import pdb
 
-# vgg16                                                                 (got images)                        (got images)
+# vgg16                              (ing)                              (got images)                        (got images)
 # attack success rate       dispersion_opt_14_budget_16         dispersion_opt_3_budget_16          dispersion_opt_25_budget_16
-#     inception_v3                0.6893(2307/3347)                     (1128/2365)                        0.645(645/1000)
-#     densenet121                 0.8543(3980/4659)                     0.707(707/1000)
-#     retina
-#     yolo
+#     inception_v3                0.6893(2307/3347)                     0.475(475/1000)                      0.645(645/1000)
+#     densenet121                 0.8543(3980/4659)                     0.707(707/1000)                      0.552(552/1000)
+#     retina                                                             31.75                                33.97
+#     yolo                                                               42.31                                41.49
 
-# resnet152
+# resnet152                           
 # attack success rate       dispersion_opt_5_budget_16         dispersion_opt_2_budget_16          dispersion_opt_8_budget_16
-#     inception_v3                     ing
+#     inception_v3                                   
 #     densenet121                 
-#     retina
-#     yolo
+#     retina                           
+#     yolo   
 
 
 result_file = 'ILSVRC_result.txt'
@@ -46,11 +46,11 @@ with open('labels.txt','r') as inf:
 dataset_dir = "/home/yantao/datasets/ILSVRC/Data/DET/test"
 images_name = os.listdir(dataset_dir)
 
-#model = Vgg16()
-#internal = [i for i in range(29)]
+model = Vgg16()
+internal = [i for i in range(29)]
 
-model = Resnet152()
-internal = [i for i in range(9)]
+#model = Resnet152()
+#internal = [i for i in range(9)]
 
 test_model = torchvision.models.inception_v3(pretrained='imagenet').cuda().eval()
 #attack = DispersionAttack(model, epsilon=16./255, step_size=1./255, steps=2000, test_api=True)
@@ -84,15 +84,16 @@ for idx, temp_image_name in enumerate(tqdm(images_name)):
     pred_cls = imagenet_dict[gt_label]
     print(pred_cls)
 
+    attack_layer_idx = 14
     adv, info_dict = attack(image, 
-                            attack_layer_idx=5, 
+                            attack_layer_idx=attack_layer_idx, 
                             internal=internal, 
                             test_steps=500, 
                             gt_label=gt_label,
                             test_model=test_model)
 
     adv_pil = Image.fromarray(np.transpose((adv[0].detach().numpy() * 255).astype(np.uint8), (1, 2, 0)))
-    adv_pil.save(os.path.join("/home/yantao/datasets/ILSVRC1000/adv_dispersion_opt_2_resnet152", temp_image_name))
+    adv_pil.save(os.path.join("/home/yantao/datasets/ILSVRC1000/adv_dispersion_opt_{0:02d}_vgg16".format(attack_layer_idx), temp_image_name))
 
     if bool(info_dict):
         output_label = info_dict['det_label']

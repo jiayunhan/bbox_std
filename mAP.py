@@ -20,9 +20,9 @@ def save_detection_to_file(input_dic, output_file, task):
         for temp_class, temp_bbox, temp_score in zip(class_list, bbox_list, scores_list):
             top, left, bottom, right = temp_bbox
             if task == 'ground_truth':
-                txt_file.write(temp_class + "," + str(int(left)) + "," + str(int(top)) + "," + str(int(right)) + "," + str(int(bottom)) + '\n')
+                txt_file.write(str(temp_class) + "," + str(int(left)) + "," + str(int(top)) + "," + str(int(right)) + "," + str(int(bottom)) + '\n')
             elif task == 'detection':
-                txt_file.write(temp_class + "," + str(temp_score) + "," + str(int(left)) + "," + str(int(top)) + "," + str(int(right)) + "," + str(int(bottom)) + '\n')
+                txt_file.write(str(temp_class) + "," + str(temp_score) + "," + str(int(left)) + "," + str(int(top)) + "," + str(int(right)) + "," + str(int(bottom)) + '\n')
             else:
                 raise ValueError('Invalid task.')
 

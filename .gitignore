@@ -8,6 +8,7 @@ out/
 *.pny
 *.h5
 
+**/*.h5
 # mac shit
 .DS_Store 
 

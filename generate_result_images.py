@@ -25,7 +25,7 @@ internal = [i for i in range(29)]
 
 attack = DispersionAttack_opt(model, epsilon=32./255, steps=200)
 
-image_np = load_image(data_format='channels_first', fname='cat.jpg')
+image_np = load_image(data_format='channels_first', fname='example.png')
 
 image_pil = Image.fromarray(np.transpose((image_np * 255).astype(np.uint8), (1, 2, 0)))
 image_pil.save(os.path.join("results", 'original.png'))

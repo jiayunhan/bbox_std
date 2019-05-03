@@ -154,12 +154,27 @@ def visualize_features_compare(ori_features, adv_features, output_dir, file_pref
         temp_ori_feature = cv2.resize(temp_ori_feature, image_size)
         temp_adv_feature = cv2.resize(temp_adv_feature, image_size)
 
-        fig=plt.figure()
+        fig=plt.figure(figsize=(10, 10))
         fig.add_subplot(1, 3, 1)
         plt.imshow(temp_ori_feature)
         fig.add_subplot(1, 3, 2)
         plt.imshow(temp_adv_feature)
         fig.add_subplot(1, 3, 3)
+        plt.imshow(0 * np.ones((10, 10)).astype(np.uint8))
         plt.colorbar()
+        plt.savefig(temp_file_path)
+        plt.close()
+
+        fig, axes = plt.subplots(nrows=1, ncols=2)
+        for idx, ax in enumerate(axes.flat):
+            if idx == 0:
+                im = ax.imshow(temp_ori_feature) #, vmin=0, vmax=10
+            elif idx == 1:
+                im = ax.imshow(temp_adv_feature) #, vmin=0, vmax=10
+
+        fig.subplots_adjust(right=0.8)
+        cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+        fig.colorbar(im, cax=cbar_ax)
+
         plt.savefig(temp_file_path)
         plt.close()
