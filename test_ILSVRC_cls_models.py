@@ -24,12 +24,12 @@ import pdb
 #     retina                         18.28                               31.75                                33.97
 #     yolo                           33.77                               42.31                                41.49
 
-# resnet152                      (got images)
+# resnet152                      (got images)                           (got images)
 # attack success rate       dispersion_opt_5_budget_16         dispersion_opt_2_budget_16          dispersion_opt_8_budget_16
-#     inception_v3                0.742(742/1000)                         ing
-#     densenet121                 0.653
-#     retina                      29.50
-#     yolo                        41.61
+#     inception_v3                0.742(742/1000)                     0.463(463/1000)                         ing
+#     densenet121                 0.653                               0.369
+#     retina                      29.50                               28.32
+#     yolo                        41.61                               57.33
 
 
 result_file = 'ILSVRC_result.txt'
@@ -51,7 +51,7 @@ images_name = os.listdir(dataset_dir)
 model = Resnet152()
 internal = [i for i in range(9)]
 
-attack_layer_idx = 2
+attack_layer_idx = 8
 layer_type = 'resnet152'
 
 test_model = torchvision.models.inception_v3(pretrained='imagenet').cuda().eval()

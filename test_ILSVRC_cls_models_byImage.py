@@ -21,7 +21,7 @@ import pdb
 dataset_dir = "/home/yantao/datasets/ILSVRC1000/"
 
 dataset_dir_ori = os.path.join(dataset_dir, 'original')
-dataset_dir_adv = os.path.join(dataset_dir, 'adv_dispersion_opt_05_resnet152')
+dataset_dir_adv = os.path.join(dataset_dir, 'adv_dispersion_opt_02_resnet152')
 
 images_name = os.listdir(dataset_dir_ori)
 
