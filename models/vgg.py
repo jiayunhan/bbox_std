@@ -9,7 +9,6 @@ class Vgg16(torch.nn.Module):
         self.model = models.vgg16(pretrained=True).cuda().eval()
         features = list(self.model.features)
         self.features = torch.nn.ModuleList(features).cuda().eval()
-        pdb.set_trace()
 
     def prediction(self, x, internal=[]):
         pred = self.model(x)

@@ -18,8 +18,8 @@ from tqdm import tqdm
 import pdb
 
 # VGG16
-# mAP       dispersion_opt_12       dispersion_opt_14       mi-FGSM(m=0.5)         DIM(m=0.5)       mi-FGSM(m=1.0)      DIM(m=1.0)
-# budget=16       37.57                   32.88                 42.06                40.89               42.62              36.52
+# mAP       dispersion_opt_12       dispersion_opt_14       mi-FGSM(m=0.5)         DIM(m=0.5)       mi-FGSM(m=1.0)      DIM(m=1.0)      TI-DIM
+# budget=16       37.57                   32.88                 42.06                40.89               42.62              36.52        33.98
 # budget=32       20.48                   16.25                 24.34                32.61               26.06              22.34
 
 # resnet152

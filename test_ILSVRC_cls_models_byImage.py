@@ -21,15 +21,15 @@ import pdb
 dataset_dir = "/home/yantao/datasets/ILSVRC1000/"
 
 dataset_dir_ori = os.path.join(dataset_dir, 'original')
-dataset_dir_adv = os.path.join(dataset_dir, 'adv_dispersion_opt_02_resnet152')
+dataset_dir_adv = os.path.join(dataset_dir, 'TI')
 
 images_name = os.listdir(dataset_dir_ori)
 
 test_model = torchvision.models.densenet121(pretrained='imagenet').cuda().eval()
 
-total_samples = 1000
 success_attacks = 0
 for idx, temp_image_name in enumerate(tqdm(images_name)):
+    total_samples = len(images_name)
     ori_img_path = os.path.join(dataset_dir_ori, temp_image_name)
     adv_img_path = os.path.join(dataset_dir_adv, temp_image_name)
 
@@ -42,6 +42,9 @@ for idx, temp_image_name in enumerate(tqdm(images_name)):
     image_adv_var = numpy_to_variable(image_adv_np)
     pd_out = test_model(image_adv_var).detach().cpu().numpy()
     pd_label = np.argmax(pd_out)
+
+    linf = int(np.max(abs(image_ori_np - image_adv_np)) * 255)
+    print('linf: ', linf)
 
     if gt_label != pd_label:
         success_attacks += 1

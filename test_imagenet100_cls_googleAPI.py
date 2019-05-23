@@ -21,10 +21,10 @@ import pdb
 # Vgg16 [2, 7, 14, 21, 28]
 
 #       VGG16
-# attack success rate      std_opt_12      std_opt_14      std_12      std_14      mi-fgsm(m=0.5)     DIM(m=0.5)    mi-fgsm(m=1.0)     DIM(m=1.0)
-#           budget=16        0.72             0.77          0.77        0.71         0.56               0.52            0.59              0.61
+# attack success rate      std_opt_12      std_opt_14      std_12      std_14      mi-fgsm(m=0.5)     DIM(m=0.5)    mi-fgsm(m=1.0)     DIM(m=1.0)       TI-DIM
+#           budget=16        0.72             0.77          0.77        0.71         0.56               0.52            0.59              0.61          
 #           budget=32        0.98             0.98          0.91        0.92         0.89()             0.64                              0.79
-
+#                                                                                                                                                        0.67(ensemble)
 
 #      Resnet152
 # attack success rate      std_opt_12      std_opt_8      std_12      std_14      mi-fgsm(m=0.5)     DIM(m=0.5)    mi-fgsm(m=1.0)     DIM(m=1.0)

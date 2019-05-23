@@ -13,60 +13,33 @@ import os
 import pdb
 
 
-class DispersionAttack(object):
-    def __init__(self, model, epsilon=1, step_size=0.004, steps=100, regularization_weight=0, test_api=False):
+class DispersionAttack_gpu(object):
+    def __init__(self, model, epsilon=16/255., step_size=0.004, steps=10):
         
         self.step_size = step_size
         self.epsilon = epsilon
         self.steps = steps
         self.model = copy.deepcopy(model)
-        self.regularization_weight = regularization_weight
-        self.test_api = test_api
 
-    def __call__(self, X_nat, attack_layer_idx=-1, internal=[], test_steps=100, gt_label=None):
-        """
-        Given examples (X_nat, y), returns adversarial
-        examples within epsilon of X_nat in l_infinity norm.
-        """
-        info_dict = {}
-
-        X_nat_np = X_nat.cpu().numpy()
+    def __call__(self, X_nat_var, attack_layer_idx=-1, internal=[]):
         for p in self.model.parameters():
             p.requires_grad = False
-        
-        X = np.copy(X_nat_np)
-        
+        self.model.eval()
+        X_var = copy.deepcopy(X_nat_var)
         for i in range(self.steps):
-            X_nat_var = Variable(torch.from_numpy(X_nat_np).cuda(), requires_grad=False, volatile=False)
-            X_var = Variable(torch.from_numpy(X).cuda(), requires_grad=True, volatile=False)
+            X_var = X_var.requires_grad_()
             internal_logits, pred = self.model.prediction(X_var, internal=internal)
             logit = internal_logits[attack_layer_idx]
-            loss = -1 * logit.std() + self.regularization_weight * F.l1_loss(X_nat_var, X_var, reduction='mean')
+            loss = -1 * logit.std()
             self.model.zero_grad()
             loss.backward()
-            grad = X_var.grad.data.cpu().numpy()
-            X_var.grad.zero_()
+            grad = X_var.grad.data
 
-            X += self.step_size * np.sign(grad)
-            X = np.clip(X, X_nat_np - self.epsilon, X_nat_np + self.epsilon)
-            X = np.clip(X, 0, 1) # ensure valid pixel range
+            X_var = X_var.detach() + self.step_size * grad.sign_()
+            X_var = torch.max(torch.min(X_var, X_nat_var + self.epsilon), X_nat_var - self.epsilon)
+            X_var = torch.clamp(X_var, 0, 1)
 
-            if self.test_api and i % test_steps == 0:
-                adv_np = X
-                Image.fromarray(np.transpose((adv_np[0] * 255.).astype(np.uint8), (1, 2, 0))).save('./out/temp_dispersion.jpg')
-                google_label = detect_label_file('./out/temp_dispersion.jpg')
-                if len(google_label) > 0:
-                    pred_cls = google_label[0].description
-                else:
-                    pred_cls = 'none'
-
-                if gt_label is not None:
-                    if gt_label != pred_cls and gt_label != 'none':
-                        info_dict['end_epoch'] = i
-                        info_dict['det_label'] = pred_cls
-                        info_dict['loss'] = loss.detach().cpu().numpy()
-                        return torch.from_numpy(X), info_dict
-        return torch.from_numpy(X), info_dict
+        return X_var.detach()
 
 
 class DispersionAttack_opt(object):

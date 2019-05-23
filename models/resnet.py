@@ -27,3 +27,6 @@ class Resnet152(torch.nn.Module):
             if(hit_cnt==len(internal)):
                 break
         return layers, pred
+
+if __name__ == "__main__":
+    Resnet152()
