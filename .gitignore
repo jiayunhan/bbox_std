@@ -1,6 +1,5 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
-out/
 *.py[cod]
 *$py.class
 
@@ -8,7 +7,6 @@ out/
 *.pny
 *.h5
 
-**/*.h5
 # mac shit
 .DS_Store 
 
@@ -112,5 +110,3 @@ venv.bak/
 
 # mypy
 .mypy_cache/
-
-**/*.txt
