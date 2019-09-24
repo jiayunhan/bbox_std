@@ -1,14 +1,15 @@
 import copy
-import numpy as np
-from torch.autograd import Variable
-import torch
-import torch.nn.functional as F
-from PIL import Image
-from api_utils import detect_label_file, detect_objects_file, googleDet_to_Dictionary
-import shutil
-from torch_utils import numpy_to_variable, variable_to_numpy
-from image_utils import save_bbox_img
 import os
+import shutil
+import numpy as np
+from PIL import Image
+import torch
+from torch.autograd import Variable
+import torch.nn.functional as F
+
+from utils.torch_utils import numpy_to_variable, variable_to_numpy
+from utils.api_utils import detect_label_file, detect_objects_file, googleDet_to_Dictionary
+from utils.image_utils import save_bbox_img
 
 import pdb
 
