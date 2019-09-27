@@ -9,12 +9,15 @@ from tqdm import tqdm
 import argparse
 
 from attacks.dispersion import DispersionAttack_gpu
+from attacks.DIM import DIM_Attack
 from models.vgg import Vgg16
 from utils.image_utils import load_image, save_image
 from utils.torch_utils import numpy_to_variable, variable_to_numpy
 
 import pdb                       
 
+# DR  : python script_generate_adversarial_imagenet5000.py
+# DIM : python script_generate_adversarial_imagenet5000.py --adv-method dim --step-size 25.5 --steps 40
 
 def parse_args(args):
     """ Parse the arguments.
@@ -24,7 +27,7 @@ def parse_args(args):
     parser.add_argument('--adv-method',  help='Adversarial attack method.', default='dr', type=str)
     parser.add_argument('--target-model',  help='Target model for generating AEs.', default='vgg16', type=str)
     parser.add_argument('--epsilon', help='Budget for attack.', default=16, type=int)
-    parser.add_argument('--step-size', help='Step size in range of 0 - 255', default=1, type=int)
+    parser.add_argument('--step-size', help='Step size in range of 0 - 255', default=1, type=float)
     parser.add_argument('--steps', help='Number of steps.', default=2000, type=int)
 
     return parser.parse_args()
@@ -44,15 +47,33 @@ def main(args=None):
     internal = None
     attack = None
     attack_layer_idx = None
-
-    if args.target_model == 'vgg16':
-        target_model = Vgg16()
-        internal = [i for i in range(29)]
-        attack_layer_idx = 14
-    
+    pdb.set_trace()
     if args.adv_method == 'dr':
+        if args.target_model == 'vgg16':
+            target_model = Vgg16()
+            internal = [i for i in range(29)]
+            attack_layer_idx = 14
+
         attack = DispersionAttack_gpu(target_model, epsilon=args.epsilon/255., step_size=args.step_size/255., steps=args.steps)
 
+    elif args.adv_method == 'dim':
+        attack_layer_idx = 0
+        internal = [0]
+        if args.target_model == 'vgg16':
+            target_model = torchvision.models.vgg16(pretrained=True)
+
+        attack = DIM_Attack(
+            target_model, 
+            decay_factor=1, 
+            prob=0.5, 
+            epsilon=args.epsilon/255., 
+            step_size=args.step_size/255., 
+            steps=args.steps, 
+            image_resize=330
+        )
+        
+    else:
+        raise ValueError('Invalid adv_mdthod.')
     assert target_model != None and internal != None and attack != None and attack_layer_idx != None
 
     args_dic['output_dir'] = os.path.join(
