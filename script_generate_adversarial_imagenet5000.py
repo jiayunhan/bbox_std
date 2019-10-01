@@ -47,7 +47,6 @@ def main(args=None):
     internal = None
     attack = None
     attack_layer_idx = None
-    pdb.set_trace()
     if args.adv_method == 'dr':
         if args.target_model == 'vgg16':
             target_model = Vgg16()
