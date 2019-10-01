@@ -59,7 +59,7 @@ def main(args=None):
         attack_layer_idx = 0
         internal = [0]
         if args.target_model == 'vgg16':
-            target_model = torchvision.models.vgg16(pretrained=True)
+            target_model = torchvision.models.vgg16(pretrained=True).cuda()
 
         attack = DIM_Attack(
             target_model, 
@@ -96,11 +96,13 @@ def main(args=None):
 
         image_np = load_image(data_format='channels_first', abs_path=True, fpath=image_path)
         image_var = numpy_to_variable(image_np)
-
+        target_model.eval()
+        logits_nat = target_model(image_var)
+        y_var = logits_nat.argmax().long().unsqueeze(0)
+        print(y_var)
         adv = attack(
-            image_var, 
-            attack_layer_idx=attack_layer_idx,
-            internal=internal
+            image_var.cpu(), 
+            y_var.cpu()
         )
 
         adv_np = variable_to_numpy(adv)

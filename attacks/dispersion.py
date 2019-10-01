@@ -20,7 +20,7 @@ class DispersionAttack_gpu(object):
         self.step_size = step_size
         self.epsilon = epsilon
         self.steps = steps
-        self.model = copy.deepcopy(model)
+        self.model = copy.deepcopy(model).cuda()
 
     def __call__(self, X_nat_var, attack_layer_idx=-1, internal=[]):
         for p in self.model.parameters():
