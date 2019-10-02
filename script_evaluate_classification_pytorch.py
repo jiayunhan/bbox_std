@@ -12,7 +12,10 @@ import json
 from utils.image_utils import load_image, save_image
 from utils.torch_utils import numpy_to_variable, variable_to_numpy
 
-import pdb                       
+import pdb   
+
+PICK_LIST = []
+BAN_LIST = ['dr_vgg16_layerAt_12_14_eps_16_stepsize_1_steps_2000']
 
 def parse_args(args):
     """ Parse the arguments.
@@ -44,6 +47,10 @@ def main(args=None):
             continue 
         if temp_folder == 'imagenet_val_5000' or temp_folder == 'ori' or temp_folder == '.git':
             continue 
+        if len(PICK_LIST) != 0 and temp_folder not in PICK_LIST:
+            continue
+        if len(BAN_LIST) != 0 and temp_folder in BAN_LIST:
+            continue
         test_folders.append(temp_folder)
     
     result_dict = {}

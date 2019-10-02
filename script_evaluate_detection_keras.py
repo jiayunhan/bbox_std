@@ -1,7 +1,7 @@
 import os
 import sys
 import shutil
-import pickle
+import json
 from keras import backend as K
 from PIL import Image
 import numpy as np
@@ -84,7 +84,8 @@ def main(args=None):
 
             save_detection_to_file(gt_out, os.path.join(result_dir, 'gt', temp_image_name_noext + '.txt'), 'ground_truth')
             save_detection_to_file(pd_out, os.path.join(result_dir, 'pd', temp_image_name_noext + '.txt'), 'detection')
-
+            
+            '''
             if gt_out:
                 save_bbox_img(os.path.join(result_dir, 'ori.jpg'), gt_out['boxes'], out_file='temp_ori_box.jpg')
             else:
@@ -93,9 +94,10 @@ def main(args=None):
                 save_bbox_img(os.path.join(result_dir, 'temp_adv.jpg'), pd_out['boxes'], out_file='temp_adv_box.jpg')
             else:
                 save_bbox_img(os.path.join(result_dir, 'temp_adv.jpg'), [], out_file='temp_adv_box.jpg')
+            '''
 
         mAP_score = calculate_mAP_from_files(os.path.join(result_dir, 'gt'), os.path.join(result_dir, 'pd'))
-        os.mkdir(result_dir)
+        shutil.rmtree(result_dir)
         print(curt_folder, ' : ', mAP_score)
         result_dict[curt_folder] = str(mAP_score)
 

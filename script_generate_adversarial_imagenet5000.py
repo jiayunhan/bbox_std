@@ -58,18 +58,21 @@ def main(args=None):
             target_model = Vgg16()
             internal = [i for i in range(29)]
             attack_layer_idx = [12, 14]
+            loss_mtd = 'std'
 
         attack = DispersionAttack_gpu(
             target_model, 
             epsilon=args.epsilon/255., 
             step_size=args.step_size/255., 
             steps=args.steps, 
-            loss_mtd='std'
+            loss_mtd=loss_mtd
         )
 
     elif args.adv_method == 'dim' or args.adv_method == 'mifgsm' or args.adv_method == 'pgd':
         attack_layer_idx = [0]
         internal = [0]
+        loss_mtd = ''
+
         if args.target_model == 'vgg16':
             target_model = torchvision.models.vgg16(pretrained=True).cuda()
 
@@ -112,13 +115,14 @@ def main(args=None):
     if not DEBUG:
         args_dic['output_dir'] = os.path.join(
             args.dataset_dir, 
-            '{0}_{1}_layerAt_{2}_eps_{3}_stepsize_{4}_steps_{5}'.format(
+            '{0}_{1}_layerAt_{2}_eps_{3}_stepsize_{4}_steps_{5}_lossmtd_{6}'.format(
                 args.adv_method, 
                 args.target_model, 
                 attack_layer_idx_str, 
                 args.epsilon,
                 args.step_size,
                 args.steps,
+                loss_mtd
             )
         )
         if os.path.exists(args.output_dir):
