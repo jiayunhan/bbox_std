@@ -15,12 +15,14 @@ import pdb
 
 
 class DispersionAttack_gpu(object):
-    def __init__(self, model, epsilon=16/255., step_size=0.004, steps=10):
+    def __init__(self, model, epsilon=16/255., step_size=0.004, steps=10, loss_mtd='std'):
         
         self.step_size = step_size
         self.epsilon = epsilon
         self.steps = steps
         self.model = copy.deepcopy(model).cuda()
+        if loss_mtd == 'std':
+            self.loss_fn = self._std_loss
 
     def __call__(self, X_nat_var, attack_layer_idx_list, internal):
         for p in self.model.parameters():
@@ -31,8 +33,9 @@ class DispersionAttack_gpu(object):
             X_var = X_var.requires_grad_()
             internal_logits, pred = self.model.prediction(X_var, internal=internal)
             logit_list = [internal_logits[x] for x in attack_layer_idx_list]
-            loss_list = [-1 * logit.std() for logit in logit_list]
-            print(loss_list)
+            print(i, ' , std: ', [x.std() for x in logit_list])
+
+            loss_list = [self.loss_fn(logit) for logit in logit_list]
             loss = None
             for temp_loss in loss_list:
                 if loss is None:
@@ -48,6 +51,9 @@ class DispersionAttack_gpu(object):
             X_var = torch.clamp(X_var, 0, 1)
         pdb.set_trace()
         return X_var.detach()
+
+    def _std_loss(self, logit):
+        return -1 * logit.std()
 
 
 class DispersionAttack_opt(object):
@@ -94,7 +100,6 @@ class DispersionAttack_opt(object):
             logit = internal_logits[attack_layer_idx]
             loss = -1 * logit.std() + 0. * cls_loss + self.regularization_weight * F.l1_loss(X_nat_var, X_var, reduction='mean')
             loss.backward()
-            #print(loss)
 
             grad = X_var.grad.data.cpu().numpy()
             X += optimizer(grad, learning_rate=self.learning_rate)
@@ -117,8 +122,8 @@ class DispersionAttack_opt(object):
 
             if self.is_test_api and i % test_steps == 0:
                 adv_np = X
-                Image.fromarray(np.transpose((adv_np[0] * 255.).astype(np.uint8), (1, 2, 0))).save('./out/temp_dispersion_opt.jpg')
-                google_label = detect_label_file('./out/temp_dispersion_opt.jpg')
+                Image.fromarray(np.transpose((adv_np[0] * 255.).astype(np.uint8), (1, 2, 0))).save('./temp/temp_dispersion_opt.jpg')
+                google_label = detect_label_file('./temp/temp_dispersion_opt.jpg')
                 if len(google_label) > 0:
                     pred_cls = google_label[0].description
                 else:

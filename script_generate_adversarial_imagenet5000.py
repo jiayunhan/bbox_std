@@ -59,7 +59,13 @@ def main(args=None):
             internal = [i for i in range(29)]
             attack_layer_idx = [12, 14]
 
-        attack = DispersionAttack_gpu(target_model, epsilon=args.epsilon/255., step_size=args.step_size/255., steps=args.steps)
+        attack = DispersionAttack_gpu(
+            target_model, 
+            epsilon=args.epsilon/255., 
+            step_size=args.step_size/255., 
+            steps=args.steps, 
+            loss_mtd='std'
+        )
 
     elif args.adv_method == 'dim' or args.adv_method == 'mifgsm' or args.adv_method == 'pgd':
         attack_layer_idx = [0]
