@@ -22,7 +22,7 @@ class DispersionAttack_gpu(object):
         self.steps = steps
         self.model = copy.deepcopy(model).cuda()
 
-    def __call__(self, X_nat_var, attack_layer_idx=-1, internal=[]):
+    def __call__(self, X_nat_var, attack_layer_idx_list, internal):
         for p in self.model.parameters():
             p.requires_grad = False
         self.model.eval()
@@ -30,8 +30,15 @@ class DispersionAttack_gpu(object):
         for i in range(self.steps):
             X_var = X_var.requires_grad_()
             internal_logits, pred = self.model.prediction(X_var, internal=internal)
-            logit = internal_logits[attack_layer_idx]
-            loss = -1 * logit.std()
+            logit_list = [internal_logits[x] for x in attack_layer_idx_list]
+            loss_list = [-1 * logit.std() for logit in logit_list]
+            print(loss_list)
+            loss = None
+            for temp_loss in loss_list:
+                if loss is None:
+                    loss = temp_loss
+                else:
+                    loss = loss + temp_loss 
             self.model.zero_grad()
             loss.backward()
             grad = X_var.grad.data
@@ -39,7 +46,7 @@ class DispersionAttack_gpu(object):
             X_var = X_var.detach() + self.step_size * grad.sign_()
             X_var = torch.max(torch.min(X_var, X_nat_var + self.epsilon), X_nat_var - self.epsilon)
             X_var = torch.clamp(X_var, 0, 1)
-
+        pdb.set_trace()
         return X_var.detach()
 
 

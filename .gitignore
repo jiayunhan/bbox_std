@@ -6,6 +6,7 @@ __pycache__/
 # large model data
 *.pny
 *.h5
+**/.h5
 
 # mac shit
 .DS_Store 
