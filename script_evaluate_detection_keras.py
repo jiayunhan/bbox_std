@@ -59,12 +59,12 @@ def main(args=None):
     for curt_folder in test_folders:
         print('Folder : {0}'.format(curt_folder))
 
-        result_dic = 'temp_dect_results'
-        if os.path.exists(result_dic):
-            shutil.rmtree(result_dic)
-        os.mkdir(result_dic)
-        os.mkdir(os.path.join(result_dic, 'gt'))
-        os.mkdir(os.path.join(result_dic, 'pd'))
+        result_dir = 'temp_dect_results'
+        if os.path.exists(result_dir):
+            shutil.rmtree(result_dir)
+        os.mkdir(result_dir)
+        os.mkdir(os.path.join(result_dir, 'gt'))
+        os.mkdir(os.path.join(result_dir, 'pd'))
 
         for image_name in tqdm(os.listdir(input_dir)):
             temp_image_name_noext = os.path.splitext(image_name)[0]
@@ -73,32 +73,33 @@ def main(args=None):
             adv_img_path = os.path.splitext(adv_img_path)[0] + '.png'
             
             image_ori_np = load_image(data_format='channels_last', shape=(416, 416), bounds=(0, 255), abs_path=True, fpath=ori_img_path)
-            Image.fromarray((image_ori_np).astype(np.uint8)).save(os.path.join(result_dic, 'ori.jpg'))
+            Image.fromarray((image_ori_np).astype(np.uint8)).save(os.path.join(result_dir, 'ori.jpg'))
             image_ori_pil = Image.fromarray(image_ori_np.astype(np.uint8))
             gt_out = test_model.predict(image_ori_pil)
             
             image_adv_np = load_image(data_format='channels_last', shape=(416, 416), bounds=(0, 255), abs_path=True, fpath=adv_img_path)
-            Image.fromarray((image_adv_np).astype(np.uint8)).save(os.path.join(result_dic, 'temp_adv.jpg'))
+            Image.fromarray((image_adv_np).astype(np.uint8)).save(os.path.join(result_dir, 'temp_adv.jpg'))
             image_adv_pil = Image.fromarray(image_adv_np.astype(np.uint8))
             pd_out = test_model.predict(image_adv_pil)
 
-            save_detection_to_file(gt_out, os.path.join(result_dic, 'gt', temp_image_name_noext + '.txt'), 'ground_truth')
-            save_detection_to_file(pd_out, os.path.join(result_dic, 'pd', temp_image_name_noext + '.txt'), 'detection')
+            save_detection_to_file(gt_out, os.path.join(result_dir, 'gt', temp_image_name_noext + '.txt'), 'ground_truth')
+            save_detection_to_file(pd_out, os.path.join(result_dir, 'pd', temp_image_name_noext + '.txt'), 'detection')
 
             if gt_out:
-                save_bbox_img(os.path.join(result_dic, 'ori.jpg'), gt_out['boxes'], out_file='temp_ori_box.jpg')
+                save_bbox_img(os.path.join(result_dir, 'ori.jpg'), gt_out['boxes'], out_file='temp_ori_box.jpg')
             else:
-                save_bbox_img(os.path.join(result_dic, 'ori.jpg'), [], out_file='temp_ori_box.jpg')
+                save_bbox_img(os.path.join(result_dir, 'ori.jpg'), [], out_file='temp_ori_box.jpg')
             if pd_out:
-                save_bbox_img(os.path.join(result_dic, 'temp_adv.jpg'), pd_out['boxes'], out_file='temp_adv_box.jpg')
+                save_bbox_img(os.path.join(result_dir, 'temp_adv.jpg'), pd_out['boxes'], out_file='temp_adv_box.jpg')
             else:
-                save_bbox_img(os.path.join(result_dic, 'temp_adv.jpg'), [], out_file='temp_adv_box.jpg')
+                save_bbox_img(os.path.join(result_dir, 'temp_adv.jpg'), [], out_file='temp_adv_box.jpg')
 
-        mAP_score = calculate_mAP_from_files(os.path.join(result_dic, 'gt'), os.path.join(result_dic, 'pd'))
+        mAP_score = calculate_mAP_from_files(os.path.join(result_dir, 'gt'), os.path.join(result_dir, 'pd'))
+        os.mkdir(result_dir)
         print(curt_folder, ' : ', mAP_score)
         result_dict[curt_folder] = str(mAP_score)
 
-    with open('temp_det_results_{0}.pkl'.format(args.test_model), 'wb') as f:
+    with open('temp_det_results_{0}.json'.format(args.test_model), 'wb') as f:
         pickle.dump(result_dict, f)
 
 
