@@ -99,8 +99,8 @@ def main(args=None):
         print(curt_folder, ' : ', mAP_score)
         result_dict[curt_folder] = str(mAP_score)
 
-    with open('temp_det_results_{0}.json'.format(args.test_model), 'wb') as f:
-        pickle.dump(result_dict, f)
+    with open('temp_det_results_{0}.json'.format(args.test_model), 'w') as fout:
+        json.dump(result_dict, fout, indent=2)
 
 
 if __name__ == '__main__':

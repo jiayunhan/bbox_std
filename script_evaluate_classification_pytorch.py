@@ -7,7 +7,7 @@ from PIL import Image
 import numpy as np
 from tqdm import tqdm
 import argparse
-import pickle
+import json
 
 from utils.image_utils import load_image, save_image
 from utils.torch_utils import numpy_to_variable, variable_to_numpy
@@ -74,8 +74,8 @@ def main(args=None):
         print('Accuracy for {0} : {1}'.format(curt_folder, acc))
         result_dict[curt_folder] = str(acc)
 
-    with open('temp_cls_results_{0}.pkl'.format(args.test_model), 'wb') as f:
-        pickle.dump(result_dict, f)
+    with open('temp_cls_results_{0}.json'.format(args.test_model), 'w') as fout:
+        json.dump(result_dict, fout, indent=2)
 
 
 if __name__ == '__main__':
