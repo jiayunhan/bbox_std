@@ -47,7 +47,7 @@ def main(args=None):
         img_size = 416
     elif args.test_model == 'ssd_mobile':
         test_model = SSD_detector()
-        img_size = 300
+        img_size = 500
 
     test_folders = []
     for temp_folder in os.listdir(args.dataset_dir):
