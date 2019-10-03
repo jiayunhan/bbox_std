@@ -10,13 +10,14 @@ import argparse
 
 from models.yolov3.yolov3_wrapper import YOLOv3
 from models.retina_resnet50.keras_retina_resnet50 import KerasResNet50RetinaNetModel
+from models.ssd_mobilenet.SSD import SSD_detector
 from utils.image_utils import load_image, save_image, save_bbox_img
 from utils.mAP import save_detection_to_file, calculate_mAP_from_files
 
 import pdb                       
 
 PICK_LIST = []
-BAN_LIST = ['dr_vgg16_layerAt_12_14_eps_16_stepsize_1_steps_2000']
+BAN_LIST = ['dr_vgg16_layerAt_12_eps_16_stepsize_1_steps_2000_lossmtd_std']
 
 def parse_args(args):
     """ Parse the arguments.
@@ -40,8 +41,13 @@ def main(args=None):
 
     if args.test_model == 'yolov3':
         test_model = YOLOv3(sess = K.get_session())
+        img_size = 416
     elif args.test_model == 'retina_resnet50':
         test_model = KerasResNet50RetinaNetModel()
+        img_size = 416
+    elif args.test_model == 'ssd_mobile':
+        test_model = SSD_detector()
+        img_size = 300
 
     test_folders = []
     for temp_folder in os.listdir(args.dataset_dir):
@@ -72,12 +78,12 @@ def main(args=None):
             adv_img_path = os.path.join(args.dataset_dir, curt_folder, image_name)
             adv_img_path = os.path.splitext(adv_img_path)[0] + '.png'
             
-            image_ori_np = load_image(data_format='channels_last', shape=(416, 416), bounds=(0, 255), abs_path=True, fpath=ori_img_path)
+            image_ori_np = load_image(data_format='channels_last', shape=(img_size, img_size), bounds=(0, 255), abs_path=True, fpath=ori_img_path)
             Image.fromarray((image_ori_np).astype(np.uint8)).save(os.path.join(result_dir, 'ori.jpg'))
             image_ori_pil = Image.fromarray(image_ori_np.astype(np.uint8))
             gt_out = test_model.predict(image_ori_pil)
             
-            image_adv_np = load_image(data_format='channels_last', shape=(416, 416), bounds=(0, 255), abs_path=True, fpath=adv_img_path)
+            image_adv_np = load_image(data_format='channels_last', shape=(img_size, img_size), bounds=(0, 255), abs_path=True, fpath=adv_img_path)
             Image.fromarray((image_adv_np).astype(np.uint8)).save(os.path.join(result_dir, 'temp_adv.jpg'))
             image_adv_pil = Image.fromarray(image_adv_np.astype(np.uint8))
             pd_out = test_model.predict(image_adv_pil)
@@ -85,7 +91,7 @@ def main(args=None):
             save_detection_to_file(gt_out, os.path.join(result_dir, 'gt', temp_image_name_noext + '.txt'), 'ground_truth')
             save_detection_to_file(pd_out, os.path.join(result_dir, 'pd', temp_image_name_noext + '.txt'), 'detection')
             
-            '''
+            
             if gt_out:
                 save_bbox_img(os.path.join(result_dir, 'ori.jpg'), gt_out['boxes'], out_file='temp_ori_box.jpg')
             else:
@@ -94,7 +100,7 @@ def main(args=None):
                 save_bbox_img(os.path.join(result_dir, 'temp_adv.jpg'), pd_out['boxes'], out_file='temp_adv_box.jpg')
             else:
                 save_bbox_img(os.path.join(result_dir, 'temp_adv.jpg'), [], out_file='temp_adv_box.jpg')
-            '''
+            
 
         mAP_score = calculate_mAP_from_files(os.path.join(result_dir, 'gt'), os.path.join(result_dir, 'pd'))
         shutil.rmtree(result_dir)

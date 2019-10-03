@@ -33,7 +33,7 @@ class DispersionAttack_gpu(object):
             X_var = X_var.requires_grad_()
             internal_logits, pred = self.model.prediction(X_var, internal=internal)
             logit_list = [internal_logits[x] for x in attack_layer_idx_list]
-            print(i, ' , std: ', [x.std() for x in logit_list])
+            #print(i, ' , std: ', [x.std() for x in logit_list])
 
             loss_list = [self.loss_fn(logit) for logit in logit_list]
             loss = None
@@ -49,7 +49,7 @@ class DispersionAttack_gpu(object):
             X_var = X_var.detach() + self.step_size * grad.sign_()
             X_var = torch.max(torch.min(X_var, X_nat_var + self.epsilon), X_nat_var - self.epsilon)
             X_var = torch.clamp(X_var, 0, 1)
-        pdb.set_trace()
+        #pdb.set_trace()
         return X_var.detach()
 
     def _std_loss(self, logit):

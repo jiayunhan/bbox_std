@@ -1,6 +1,3 @@
 {
-  "dim_vgg16_layerAt_00_eps_16_stepsize_25.5_steps_40": "0.16927260802891914",
-  "pgd_vgg16_layerAt_00_eps_16_stepsize_25.5_steps_40": "0.2168753260828046",
-  "dr_vgg16_layerAt_14_eps_16_stepsize_1_steps_2000": "0.15996021125364762",
-  "mifgsm_vgg16_layerAt_00_eps_16_stepsize_25.5_steps_40": "0.18571412549770744"
+  "dr_vgg16_layerAt_12_14_eps_16_stepsize_1_steps_2000_lossmtd_std": "0.17142500831247726"
 }

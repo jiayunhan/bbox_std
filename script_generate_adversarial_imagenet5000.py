@@ -23,7 +23,7 @@ import pdb
 # mi-FGSM   : python script_generate_adversarial_imagenet5000.py --adv-method mifgsm --step-size 25.5 --steps 40
 # PGD       : python script_generate_adversarial_imagenet5000.py --adv-method pgd --step-size 25.5 --steps 40
 
-DEBUG = True
+DEBUG = False
 
 def parse_args(args):
     """ Parse the arguments.
@@ -57,7 +57,7 @@ def main(args=None):
         if args.target_model == 'vgg16':
             target_model = Vgg16()
             internal = [i for i in range(29)]
-            attack_layer_idx = [12, 14]
+            attack_layer_idx = [12] # 12, 14
             loss_mtd = 'std'
 
         attack = DispersionAttack_gpu(
