@@ -14,8 +14,12 @@ from utils.torch_utils import numpy_to_variable, variable_to_numpy
 
 import pdb   
 
-PICK_LIST = []
-BAN_LIST = ['dr_vgg16_layerAt_12_eps_16_stepsize_1_steps_2000_lossmtd_std']
+
+PICK_LIST = [
+    'dr_vgg16_layerAt_12_eps_16_stepsize_1_steps_2000_lossmtd_std',
+    'tidim_vgg16_layerAt_00_eps_16_stepsize_3.2_steps_10',
+]
+BAN_LIST = []
 
 def parse_args(args):
     """ Parse the arguments.
