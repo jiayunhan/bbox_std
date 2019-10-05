@@ -18,7 +18,6 @@ import pdb
 
 
 PICK_LIST = [
-    'dr_vgg16_layerAt_12_eps_16_stepsize_1_steps_2000_lossmtd_std',
     'tidim_vgg16_layerAt_00_eps_16_stepsize_3.2_steps_10',
 ]
 BAN_LIST = []
