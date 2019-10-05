@@ -65,7 +65,9 @@ def main(args=None):
         for image_name in tqdm(os.listdir(input_dir)):
             image_ori_path = os.path.join(input_dir, image_name)
             image_adv_path = os.path.join(args.dataset_dir, curt_folder, image_name)
-            image_adv_path = os.path.splitext(image_adv_path)[0] + '.png'
+            if curt_folder[:5] != 'tidim':
+                image_adv_path = os.path.splitext(image_adv_path)[0] + '.png'
+                
             image_ori_np = load_image(data_format='channels_first', abs_path=True, fpath=image_ori_path)
             image_adv_np = load_image(data_format='channels_first', abs_path=True, fpath=image_adv_path)
             image_ori_var = numpy_to_variable(image_ori_np)
