@@ -8,6 +8,7 @@ __pycache__/
 *.h5
 **/.h5
 models/deeplabv3plus/pretrained/*.tar
+temp*
 
 # mac shit
 .DS_Store 
