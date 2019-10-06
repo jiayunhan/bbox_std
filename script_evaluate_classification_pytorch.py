@@ -16,7 +16,6 @@ import pdb
 
 
 PICK_LIST = [
-    'dr_vgg16_layerAt_12_eps_16_stepsize_1_steps_2000_lossmtd_std',
     'tidim_vgg16_layerAt_00_eps_16_stepsize_3.2_steps_10',
 ]
 BAN_LIST = []
@@ -65,8 +64,7 @@ def main(args=None):
         for image_name in tqdm(os.listdir(input_dir)):
             image_ori_path = os.path.join(input_dir, image_name)
             image_adv_path = os.path.join(args.dataset_dir, curt_folder, image_name)
-            if curt_folder[:5] != 'tidim':
-                image_adv_path = os.path.splitext(image_adv_path)[0] + '.png'
+            image_adv_path = os.path.splitext(image_adv_path)[0] + '.png'
                 
             image_ori_np = load_image(data_format='channels_first', abs_path=True, fpath=image_ori_path)
             image_adv_np = load_image(data_format='channels_first', abs_path=True, fpath=image_adv_path)

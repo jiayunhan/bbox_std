@@ -58,8 +58,7 @@ def test(args):
             temp_image_name_noext = os.path.splitext(image_name)[0]
             ori_img_path = os.path.join(input_dir, image_name)
             adv_img_path = os.path.join(args.dataset_dir, curt_folder, image_name)
-            if curt_folder[:5] != 'tidim':
-                adv_img_path = os.path.splitext(adv_img_path)[0] + '.png'
+            adv_img_path = os.path.splitext(adv_img_path)[0] + '.png'
 
             image_ori_np = load_image(
                 data_format='channels_first', 

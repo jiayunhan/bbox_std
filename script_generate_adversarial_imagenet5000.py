@@ -13,6 +13,8 @@ from attacks.DIM import DIM_Attack
 from attacks.mifgsm import MomentumIteratorAttack
 from attacks.linf_pgd import LinfPGDAttack
 from models.vgg import Vgg16
+from models.resnet import Resnet152
+from models.inception import Inception_v3
 from utils.image_utils import load_image, save_image
 from utils.torch_utils import numpy_to_variable, variable_to_numpy
 
@@ -31,7 +33,8 @@ def parse_args(args):
     parser = argparse.ArgumentParser(description='Script for generating adversarial examples.')
     parser.add_argument('--dataset-dir', help='Dataset folder path.', default='/home/yantao/workspace/datasets/imagenet5000', type=str)
     parser.add_argument('--adv-method',  help='Adversarial attack method.', default='dr', type=str)
-    parser.add_argument('--target-model',  help='Target model for generating AEs.', default='vgg16', type=str)
+    parser.add_argument('--loss-method',  help='Loss function for DR attack.', default='std', type=str)
+    parser.add_argument('-tm', '--target-model',  help='Target model for generating AEs.', default='vgg16', type=str)
     parser.add_argument('--epsilon', help='Budget for attack.', default=16, type=int)
     parser.add_argument('--step-size', help='Step size in range of 0 - 255', default=1, type=float)
     parser.add_argument('--steps', help='Number of steps.', default=2000, type=int)
@@ -54,11 +57,24 @@ def main(args=None):
     attack = None
     attack_layer_idx = None
     if args.adv_method == 'dr':
+        loss_mtd = args.loss_method
         if args.target_model == 'vgg16':
             target_model = Vgg16()
             internal = [i for i in range(29)]
-            attack_layer_idx = [12] # 12, 14
-            loss_mtd = 'std'
+            attack_layer_idx = [14] # 12, 14
+            args_dic['image_size'] = (224, 224)
+        elif args.target_model == 'resnet152':
+            target_model = Resnet152()
+            internal = [i for i in range(9)]
+            attack_layer_idx = [8]
+            args_dic['image_size'] = (224, 224)
+        elif args.target_model == 'inception_v3':
+            target_model = Inception_v3()
+            internal = [i for i in range(14)]
+            attack_layer_idx = [13]
+            args_dic['image_size'] = (299, 299)
+        else:
+            raise
 
         attack = DispersionAttack_gpu(
             target_model, 
@@ -74,7 +90,16 @@ def main(args=None):
         loss_mtd = ''
 
         if args.target_model == 'vgg16':
-            target_model = torchvision.models.vgg16(pretrained=True).cuda()
+            target_model = torchvision.models.vgg16(pretrained=True).cuda().eval()
+            args_dic['image_size'] = (224, 224)
+        elif args.target_model == 'resnet152':
+            target_model = torchvision.models.resnet152(pretrained=True).cuda().eval()
+            args_dic['image_size'] = (224, 224)
+        elif args.target_model == 'inception_v3':
+            target_model = models.inception_v3(pretrained=True).cuda().eval()
+            args_dic['image_size'] = (299, 299)
+        else:
+            raise ValueError('Invalid adv_method.')
 
         if args.adv_method == 'dim':
             attack = DIM_Attack(
@@ -132,7 +157,7 @@ def main(args=None):
     for image_name in tqdm(os.listdir(args.input_dir)):
         image_path = os.path.join(args.input_dir, image_name)
 
-        image_np = load_image(data_format='channels_first', abs_path=True, fpath=image_path)
+        image_np = load_image(shape=args.image_size, data_format='channels_first', abs_path=True, fpath=image_path)
         image_var = numpy_to_variable(image_np)
         if args.adv_method == 'dr':
             adv = attack(

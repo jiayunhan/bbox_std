@@ -18,8 +18,7 @@ import pdb
 
 
 PICK_LIST = [
-    #'tidim_vgg16_layerAt_00_eps_16_stepsize_3.2_steps_10',
-    'dr_vgg16_layerAt_12_eps_16_stepsize_1_steps_2000_lossmtd_std'
+    'tidim_vgg16_layerAt_00_eps_16_stepsize_3.2_steps_10',
 ]
 BAN_LIST = []
 
@@ -80,8 +79,7 @@ def main(args=None):
             temp_image_name_noext = os.path.splitext(image_name)[0]
             ori_img_path = os.path.join(input_dir, image_name)
             adv_img_path = os.path.join(args.dataset_dir, curt_folder, image_name)
-            if curt_folder[:5] != 'tidim':
-                adv_img_path = os.path.splitext(adv_img_path)[0] + '.png'
+            adv_img_path = os.path.splitext(adv_img_path)[0] + '.png'
             
             image_ori_np = load_image(data_format='channels_last', shape=(img_size, img_size), bounds=(0, 255), abs_path=True, fpath=ori_img_path)
             Image.fromarray((image_ori_np).astype(np.uint8)).save(os.path.join(result_dir, 'ori.jpg'))
