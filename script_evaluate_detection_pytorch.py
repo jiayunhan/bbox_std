@@ -90,13 +90,13 @@ def main(args=None):
             save_detection_to_file(pd_out, os.path.join(result_dir, 'pd', temp_image_name_noext + '.txt'), 'detection')
             
             if gt_out:
-                save_bbox_img(os.path.join(result_dir, 'temp_ori.png'), gt_out['boxes'], out_file='temp_ori_box.png')
+                save_bbox_img(os.path.join(result_dir, 'temp_ori.png'), gt_out['boxes'], out_file=os.path.join(result_dir, 'temp_ori_box.png'))
             else:
-                save_bbox_img(os.path.join(result_dir, 'temp_ori.png'), [], out_file='temp_ori_box.png')
+                save_bbox_img(os.path.join(result_dir, 'temp_ori.png'), [], out_file=os.path.join(result_dir, 'temp_ori_box.png'))
             if pd_out:
-                save_bbox_img(os.path.join(result_dir, 'temp_adv.png'), pd_out['boxes'], out_file='temp_adv_box.png')
+                save_bbox_img(os.path.join(result_dir, 'temp_adv.png'), pd_out['boxes'], out_file=os.path.join(result_dir, 'temp_adv_box.png'))
             else:
-                save_bbox_img(os.path.join(result_dir, 'temp_adv.png'), [], out_file='temp_adv_box.png')
+                save_bbox_img(os.path.join(result_dir, 'temp_adv.png'), [], out_file=os.path.join(result_dir, 'temp_adv_box.png'))
             
 
         mAP_score = calculate_mAP_from_files(os.path.join(result_dir, 'gt'), os.path.join(result_dir, 'pd'))
