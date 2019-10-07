@@ -11,3 +11,31 @@ def numpy_to_variable(image, device=torch.device('cuda:0')):
 
 def variable_to_numpy(variable):
     return np.squeeze(variable.cpu().detach().numpy())
+
+def convert_torch_det_output(torch_out, cs_th=0.3):
+    '''convert pytorch detection model output to list of dictionary of list
+        [
+            {
+                'scores': [0.97943294], 
+                'classes': [14], 
+                'boxes': [[65.1657, 17.7265, 418.3291, 314.5997]]
+            }
+        ]
+    '''
+    ret_list = []
+    for temp_torch_out in torch_out:
+        temp_dic = {
+            'scores' : [],
+            'classes' : [],
+            'boxes' : []
+        }
+        box_list = temp_torch_out['boxes'].cpu().numpy()
+        score_list = temp_torch_out['scores'].cpu().numpy()
+        label_list = temp_torch_out['labels'].cpu().numpy()
+        for box, score, label in zip(box_list, score_list, label_list):
+            if score >= cs_th:
+                temp_dic['scores'].append(score)
+                temp_dic['boxes'].append(box)
+                temp_dic['classes'].append(label)
+        ret_list.append(temp_dic)
+    return ret_list

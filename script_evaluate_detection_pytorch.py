@@ -2,23 +2,22 @@ import os
 import sys
 import shutil
 import json
-from keras import backend as K
 from PIL import Image
 import numpy as np
 from tqdm import tqdm
 import argparse
+import torchvision
+import torch
 
-from models.yolov3.yolov3_wrapper import YOLOv3
-from models.retina_resnet50.keras_retina_resnet50 import KerasResNet50RetinaNetModel
-from models.ssd_mobilenet.SSD import SSD_detector
 from utils.image_utils import load_image, save_image, save_bbox_img
 from utils.mAP import save_detection_to_file, calculate_mAP_from_files
+from utils.torch_utils import numpy_to_variable, variable_to_numpy, convert_torch_det_output
 
 import pdb                       
 
 
 PICK_LIST = []
-BAN_LIST = []
+BAN_LIST = ['dr_resnet152_layerAt_8_eps_16_stepsize_2.0_steps_500_lossmtd_std']
 
 def parse_args(args):
     """ Parse the arguments.
@@ -40,15 +39,9 @@ def main(args=None):
 
     input_dir = os.path.join(args.dataset_dir, 'ori')
 
-    if args.test_model == 'yolov3':
-        test_model = YOLOv3(sess = K.get_session())
+    if args.test_model == 'fasterrcnn':
+        test_model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True).cuda().eval()
         img_size = (416, 416)
-    elif args.test_model == 'retina_resnet50':
-        test_model = KerasResNet50RetinaNetModel()
-        img_size = (416, 416)
-    elif args.test_model == 'ssd_mobile':
-        test_model = SSD_detector()
-        img_size = (500, 500) #(416, 416)
 
     test_folders = []
     for temp_folder in os.listdir(args.dataset_dir):
@@ -79,29 +72,31 @@ def main(args=None):
             adv_img_path = os.path.join(args.dataset_dir, curt_folder, image_name)
             adv_img_path = os.path.splitext(adv_img_path)[0] + '.png'
             
-            image_ori_np = load_image(data_format='channels_last', shape=img_size, bounds=(0, 255), abs_path=True, fpath=ori_img_path)
-            Image.fromarray((image_ori_np).astype(np.uint8)).save(os.path.join(result_dir, 'ori.jpg'))
-            image_ori_pil = Image.fromarray(image_ori_np.astype(np.uint8))
-            gt_out = test_model.predict(image_ori_pil)
-            pdb.set_trace()
-            
-            image_adv_np = load_image(data_format='channels_last', shape=img_size, bounds=(0, 255), abs_path=True, fpath=adv_img_path)
-            Image.fromarray((image_adv_np).astype(np.uint8)).save(os.path.join(result_dir, 'temp_adv.jpg'))
-            image_adv_pil = Image.fromarray(image_adv_np.astype(np.uint8))
-            pd_out = test_model.predict(image_adv_pil)
+            image_ori_np = load_image(data_format='channels_first', shape=img_size, bounds=(0, 1), abs_path=True, fpath=ori_img_path)
+            Image.fromarray(np.transpose(image_ori_np * 255., (1, 2, 0)).astype(np.uint8)).save(os.path.join(result_dir, 'temp_ori.png'))
+            image_ori_var = numpy_to_variable(image_ori_np)
+            with torch.no_grad():
+                gt_out = test_model(image_ori_var)
+            gt_out = convert_torch_det_output(gt_out, cs_th=0.3)[0]
+
+            image_adv_np = load_image(data_format='channels_first', shape=img_size, bounds=(0, 1), abs_path=True, fpath=adv_img_path)
+            Image.fromarray(np.transpose(image_adv_np * 255., (1, 2, 0)).astype(np.uint8)).save(os.path.join(result_dir, 'temp_adv.png'))
+            image_adv_var = numpy_to_variable(image_adv_np)
+            with torch.no_grad():
+                pd_out = test_model(image_adv_var)
+            pd_out = convert_torch_det_output(pd_out, cs_th=0.3)[0]
 
             save_detection_to_file(gt_out, os.path.join(result_dir, 'gt', temp_image_name_noext + '.txt'), 'ground_truth')
             save_detection_to_file(pd_out, os.path.join(result_dir, 'pd', temp_image_name_noext + '.txt'), 'detection')
             
-            
             if gt_out:
-                save_bbox_img(os.path.join(result_dir, 'ori.jpg'), gt_out['boxes'], out_file='temp_ori_box.jpg')
+                save_bbox_img(os.path.join(result_dir, 'temp_ori.png'), gt_out['boxes'], out_file='temp_ori_box.png')
             else:
-                save_bbox_img(os.path.join(result_dir, 'ori.jpg'), [], out_file='temp_ori_box.jpg')
+                save_bbox_img(os.path.join(result_dir, 'temp_ori.png'), [], out_file='temp_ori_box.png')
             if pd_out:
-                save_bbox_img(os.path.join(result_dir, 'temp_adv.jpg'), pd_out['boxes'], out_file='temp_adv_box.jpg')
+                save_bbox_img(os.path.join(result_dir, 'temp_adv.png'), pd_out['boxes'], out_file='temp_adv_box.png')
             else:
-                save_bbox_img(os.path.join(result_dir, 'temp_adv.jpg'), [], out_file='temp_adv_box.jpg')
+                save_bbox_img(os.path.join(result_dir, 'temp_adv.png'), [], out_file='temp_adv_box.png')
             
 
         mAP_score = calculate_mAP_from_files(os.path.join(result_dir, 'gt'), os.path.join(result_dir, 'pd'))
