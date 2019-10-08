@@ -25,6 +25,8 @@ import pdb
 # mi-FGSM   : python script_generate_adversarial_imagenet5000.py --adv-method mifgsm --step-size 25.5 --steps 40
 # PGD       : python script_generate_adversarial_imagenet5000.py --adv-method pgd --step-size 25.5 --steps 40
 
+# python script_generate_adversarial_imagenet5000.py -tm inception_v3 --step-size 4 --steps 100
+
 DEBUG = False
 
 def parse_args(args):
@@ -38,6 +40,7 @@ def parse_args(args):
     parser.add_argument('--epsilon', help='Budget for attack.', default=16, type=int)
     parser.add_argument('--step-size', help='Step size in range of 0 - 255', default=1, type=float)
     parser.add_argument('--steps', help='Number of steps.', default=2000, type=int)
+    parser.add_argument('--inc3-attacklayer', help='Inception v3 attack layer idx.', default=-1, type=int)
 
     return parser.parse_args()
 
@@ -69,9 +72,10 @@ def main(args=None):
             attack_layer_idx = [8]
             args_dic['image_size'] = (224, 224)
         elif args.target_model == 'inception_v3':
+            assert args.inc3_attacklayer != -1
             target_model = Inception_v3()
             internal = [i for i in range(14)]
-            attack_layer_idx = [13]
+            attack_layer_idx = [args.inc3_attacklayer]
             args_dic['image_size'] = (299, 299)
         else:
             raise
@@ -96,7 +100,7 @@ def main(args=None):
             target_model = torchvision.models.resnet152(pretrained=True).cuda().eval()
             args_dic['image_size'] = (224, 224)
         elif args.target_model == 'inception_v3':
-            target_model = models.inception_v3(pretrained=True).cuda().eval()
+            target_model = torchvision.models.inception_v3(pretrained=True).cuda().eval()
             args_dic['image_size'] = (299, 299)
         else:
             raise ValueError('Invalid adv_method.')

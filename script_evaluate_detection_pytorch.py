@@ -16,8 +16,8 @@ from utils.torch_utils import numpy_to_variable, variable_to_numpy, convert_torc
 import pdb                       
 
 
-PICK_LIST = []
-BAN_LIST = ['dr_resnet152_layerAt_8_eps_16_stepsize_2.0_steps_500_lossmtd_std']
+PICK_LIST = ['dim_inception_v3_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_']
+BAN_LIST = []
 
 def parse_args(args):
     """ Parse the arguments.

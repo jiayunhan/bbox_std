@@ -17,8 +17,8 @@ from utils.mAP import save_detection_to_file, calculate_mAP_from_files
 import pdb                       
 
 
-PICK_LIST = []
-BAN_LIST = []
+PICK_LIST = ['dr_inception_v3_layerAt_13_eps_16_stepsize_4.0_steps_100_lossmtd_std']
+BAN_LIST = ['dr_resnet152_layerAt_8_eps_16_stepsize_2.0_steps_500_lossmtd_std']
 
 def parse_args(args):
     """ Parse the arguments.
@@ -83,7 +83,6 @@ def main(args=None):
             Image.fromarray((image_ori_np).astype(np.uint8)).save(os.path.join(result_dir, 'ori.jpg'))
             image_ori_pil = Image.fromarray(image_ori_np.astype(np.uint8))
             gt_out = test_model.predict(image_ori_pil)
-            pdb.set_trace()
             
             image_adv_np = load_image(data_format='channels_last', shape=img_size, bounds=(0, 255), abs_path=True, fpath=adv_img_path)
             Image.fromarray((image_adv_np).astype(np.uint8)).save(os.path.join(result_dir, 'temp_adv.jpg'))
