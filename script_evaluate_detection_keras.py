@@ -17,8 +17,16 @@ from utils.mAP import save_detection_to_file, calculate_mAP_from_files
 import pdb                       
 
 
-PICK_LIST = ['dr_inception_v3_layerAt_13_eps_16_stepsize_4.0_steps_100_lossmtd_std']
-BAN_LIST = ['dr_resnet152_layerAt_8_eps_16_stepsize_2.0_steps_500_lossmtd_std']
+PICK_LIST = [
+    'tidim_vgg16_layerAt_00_eps_16_stepsize_3.2_steps_10',
+    'pgd_inception_v3_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'mifgsm_inception_v3_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'dim_inception_v3_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'pgd_resnet152_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'mifgsm_resnet152_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'dr_resnet152_layerAt_8_eps_16_stepsize_2.0_steps_500_lossmtd_std',
+]
+BAN_LIST = []
 
 def parse_args(args):
     """ Parse the arguments.

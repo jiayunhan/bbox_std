@@ -17,8 +17,28 @@ import pdb
 
 PICK_LIST = [
     'tidim_vgg16_layerAt_00_eps_16_stepsize_3.2_steps_10',
+    'pgd_inception_v3_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'mifgsm_inception_v3_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'dim_inception_v3_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'pgd_resnet152_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'mifgsm_resnet152_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'dr_resnet152_layerAt_8_eps_16_stepsize_2.0_steps_500_lossmtd_std',
 ]
 BAN_LIST = []
+
+
+def parse_args(args):
+    parser = argparse.ArgumentParser(description="PyTorch DeeplabV3Plus Testing")
+    parser.add_argument('backbone', type=str,
+                        choices=['resnet', 'xception', 'drn', 'mobilenet'],
+                        help='backbone name (default: resnet)')
+    parser.add_argument('--dataset-dir', help='Dataset folder path.', 
+                        default='/home/yantao/workspace/datasets/imagenet5000', type=str)
+    parser.add_argument('--crop-size', type=int, default=513,
+                        help='crop image size')
+    parser.add_argument('--num-classes', type=int, default=21,
+                        help='number of classes')
+    return parser.parse_args(args)
 
 def test(args):
     input_dir = os.path.join(args.dataset_dir, 'ori')
@@ -111,19 +131,6 @@ def test(args):
     with open('temp_cls_results_{0}.json'.format(args.backbone), 'w') as fout:
         json.dump(result_dict, fout, indent=2)
         
-
-def parse_args(args):
-    parser = argparse.ArgumentParser(description="PyTorch DeeplabV3Plus Testing")
-    parser.add_argument('backbone', type=str,
-                        choices=['resnet', 'xception', 'drn', 'mobilenet'],
-                        help='backbone name (default: resnet)')
-    parser.add_argument('--dataset-dir', help='Dataset folder path.', 
-                        default='/home/yantao/workspace/datasets/imagenet5000', type=str)
-    parser.add_argument('--crop-size', type=int, default=513,
-                        help='crop image size')
-    parser.add_argument('--num-classes', type=int, default=21,
-                        help='number of classes')
-    return parser.parse_args(args)
 
 def main(args=None):
     # parse arguments
