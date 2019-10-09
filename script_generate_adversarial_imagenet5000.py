@@ -41,6 +41,7 @@ def parse_args(args):
     parser.add_argument('--step-size', help='Step size in range of 0 - 255', default=1, type=float)
     parser.add_argument('--steps', help='Number of steps.', default=2000, type=int)
     parser.add_argument('--inc3-attacklayer', help='Inception v3 attack layer idx.', default=-1, type=int)
+    parser.add_argument('--res152-attacklayer', help='Resnet152 attack layer idx.', default=-1, type=int)
 
     return parser.parse_args()
 
@@ -67,9 +68,10 @@ def main(args=None):
             attack_layer_idx = [14] # 12, 14
             args_dic['image_size'] = (224, 224)
         elif args.target_model == 'resnet152':
+            assert args.res152_attacklayer != -1
             target_model = Resnet152()
             internal = [i for i in range(9)]
-            attack_layer_idx = [8]
+            attack_layer_idx = [args.res152_attacklayer]
             args_dic['image_size'] = (224, 224)
         elif args.target_model == 'inception_v3':
             assert args.inc3_attacklayer != -1
