@@ -16,8 +16,8 @@ from utils.torch_utils import numpy_to_variable, variable_to_numpy, convert_torc
 import pdb                       
 
 
-PICK_LIST = ['dim_inception_v3_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_']
-BAN_LIST = []
+PICK_LIST = []
+BAN_LIST = ['dr_inception_v3_layerAt_3_eps_16_stepsize_4.0_steps_100_lossmtd_std']
 
 def parse_args(args):
     """ Parse the arguments.
@@ -41,6 +41,9 @@ def main(args=None):
 
     if args.test_model == 'fasterrcnn':
         test_model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True).cuda().eval()
+        img_size = (416, 416)
+    elif args.test_model == 'maskrcnn':
+        test_model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True).cuda().eval()
         img_size = (416, 416)
 
     test_folders = []
