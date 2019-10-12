@@ -21,8 +21,18 @@ class DispersionAttack_gpu(object):
         self.epsilon = epsilon
         self.steps = steps
         self.model = copy.deepcopy(model).cuda()
+        self.loss_mtd = loss_mtd
         if loss_mtd == 'std':
             self.loss_fn = self._std_loss
+        elif loss_mtd == 'l1smooth_zero_loss':
+            self.loss_fn = self._l1smooth_zero_loss
+        elif loss_mtd == 'l1smooth_avg_loss':
+            self.loss_fn = self._l1smooth_avg_loss
+        elif loss_mtd == 'selective_loss':
+            self.loss_fn = self._selective_loss
+            self.selected_idx_list = None
+        else:
+            raise ValueError('')
 
     def __call__(self, X_nat_var, attack_layer_idx_list, internal):
         for p in self.model.parameters():
@@ -31,17 +41,25 @@ class DispersionAttack_gpu(object):
         X_var = copy.deepcopy(X_nat_var)
         for i in range(self.steps):
             X_var = X_var.requires_grad_()
-            internal_logits, pred = self.model.prediction(X_var, internal=internal)
+            internal_logits, _ = self.model.prediction(X_var, internal=internal)
             logit_list = [internal_logits[x] for x in attack_layer_idx_list]
+
+            if self.loss_mtd == 'selective_loss':
+                if self.selected_idx_list is None:
+                    self.selected_idx_list = self.__init_selective_loss(logit_list, 0.5)
+
             #print(i, ' , std: ', [x.std() for x in logit_list])
 
-            loss_list = [self.loss_fn(logit) for logit in logit_list]
+            loss_list = [self.loss_fn(logit) for self.logit_idx, logit in enumerate(logit_list)]
             loss = None
             for temp_loss in loss_list:
                 if loss is None:
                     loss = temp_loss
                 else:
                     loss = loss + temp_loss 
+            loss = loss.mean()
+            #print(i, ' , ', loss)
+
             self.model.zero_grad()
             loss.backward()
             grad = X_var.grad.data
@@ -49,11 +67,58 @@ class DispersionAttack_gpu(object):
             X_var = X_var.detach() + self.step_size * grad.sign_()
             X_var = torch.max(torch.min(X_var, X_nat_var + self.epsilon), X_nat_var - self.epsilon)
             X_var = torch.clamp(X_var, 0, 1)
-        #pdb.set_trace()
         return X_var.detach()
 
     def _std_loss(self, logit):
-        return -1 * logit.std()
+        return -1 * logit.view(logit.shape[0], -1).std(1)
+
+    def _l1smooth_zero_loss(self, logit):
+        l1_smooth_loss = torch.nn.SmoothL1Loss().cuda()
+        gt = torch.zeros(logit.shape, requires_grad=False, dtype=torch.float32).cuda()
+        return -1 * l1_smooth_loss(logit, gt)
+
+    def _l1smooth_avg_loss(self, logit):
+        l1_smooth_loss = torch.nn.SmoothL1Loss().cuda()
+        logit = logit.view(logit.shape[0], -1)
+        avg = logit.mean(1).unsqueeze_(-1)
+        gt = avg.repeat((1, logit.shape[-1])).detach()
+        return -1 * l1_smooth_loss(logit, gt)
+
+    def _selective_loss(self, logit):
+        l1_smooth_loss = torch.nn.SmoothL1Loss().cuda()
+        logit = logit.view(logit.shape[0], -1)
+        selected_id = self.selected_idx_list[self.logit_idx]
+        loss = None
+        for batch_idx, curt_logit in enumerate(logit):
+            curt_selected_id = selected_id[batch_idx]
+            selected_curt_logit = curt_logit[curt_selected_id]
+            gt = torch.zeros(selected_curt_logit.shape, requires_grad=False, dtype=torch.float32).cuda()
+            curt_loss = l1_smooth_loss(selected_curt_logit, gt)
+            if loss is None:
+                loss = curt_loss
+            else:
+                loss += curt_loss
+        return -1 * loss / logit.shape[0]
+
+    def __init_selective_loss(self, logit_list, th_ratio):
+        ret_list = []
+        for _, logit in enumerate(logit_list):
+            logit = logit.view(logit.shape[0], -1)
+            logit_cp = logit.clone().detach().cpu().numpy()
+            thresholds = logit_cp.max(axis=-1)
+            arg_idx_list = []
+            for th_idx, th_max in enumerate(thresholds):
+                th = th_max * th_ratio
+                arg_id = np.argwhere(logit_cp[th_idx] >= th).reshape(-1)
+                arg_idx_list.append(arg_id)
+            ret_list.append(arg_idx_list)
+
+            #top_number = int(logit.shape[-1] * ratio)
+            #_, large_idx = torch.topk(logit, top_number, dim=-1)
+            #large_idx.detach()
+            #ret_list.append(large_idx)
+
+        return ret_list
 
 
 class DispersionAttack_opt(object):

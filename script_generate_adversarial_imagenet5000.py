@@ -27,13 +27,14 @@ import pdb
 
 # python script_generate_adversarial_imagenet5000.py -tm inception_v3 --step-size 4 --steps 100
 
-DEBUG = False
+DEBUG = True
 
 def parse_args(args):
     """ Parse the arguments.
     """
     parser = argparse.ArgumentParser(description='Script for generating adversarial examples.')
     parser.add_argument('--dataset-dir', help='Dataset folder path.', default='/home/yantao/workspace/datasets/imagenet5000', type=str)
+    parser.add_argument('--batch-size', help='Batch size.', default=1, type=int)
     parser.add_argument('--adv-method',  help='Adversarial attack method.', default='dr', type=str)
     parser.add_argument('--loss-method',  help='Loss function for DR attack.', default='std', type=str)
     parser.add_argument('-tm', '--target-model',  help='Target model for generating AEs.', default='vgg16', type=str)
@@ -77,7 +78,7 @@ def main(args=None):
             assert args.inc3_attacklayer != -1
             target_model = Inception_v3()
             internal = [i for i in range(14)]
-            attack_layer_idx = [args.inc3_attacklayer]
+            attack_layer_idx = [3, 4, 7, 8, 12] #[args.inc3_attacklayer]
             args_dic['image_size'] = (299, 299)
         else:
             raise
@@ -160,30 +161,47 @@ def main(args=None):
             raise ValueError('Output folder existed.')
         os.mkdir(args.output_dir)
 
-    for image_name in tqdm(os.listdir(args.input_dir)):
+    count = 0
+    images_list = []
+    names_list = []
+    total_images = len(os.listdir(args.input_dir))
+    assert args.batch_size > 0
+    for image_count, image_name in enumerate(tqdm(os.listdir(args.input_dir))):
         image_path = os.path.join(args.input_dir, image_name)
-
         image_np = load_image(shape=args.image_size, data_format='channels_first', abs_path=True, fpath=image_path)
-        image_var = numpy_to_variable(image_np)
+        images_list.append(image_np)
+        names_list.append(image_name)
+        count += 1
+        if count < args.batch_size and image_count != total_images - 1:
+            continue
+
+        images_np = np.array(images_list)
+        count = 0
+        images_list = []
+
+        images_var = numpy_to_variable(images_np)
         if args.adv_method == 'dr':
-            adv = attack(
-                image_var,
+            advs = attack(
+                images_var,
                 attack_layer_idx,
                 internal
             )
         else:
+            assert args.batch_size == 1, 'Baselines are not tested for batch input.'
             target_model.eval()
-            logits_nat = target_model(image_var)
+            logits_nat = target_model(images_var)
             y_var = logits_nat.argmax().long().unsqueeze(0)
-            adv = attack(
-                image_var.cpu(), 
+            advs = attack(
+                images_var.cpu(), 
                 y_var.cpu()
             )
 
         if not DEBUG:
-            adv_np = variable_to_numpy(adv)
-            image_pil = Image.fromarray(np.transpose((adv_np * 255).astype(np.uint8), (1, 2, 0)))
-            image_pil.save(os.path.join(args.output_dir, os.path.splitext(image_name)[0] + '.png'))
+            advs_np = variable_to_numpy(advs)
+            for idx, adv_np in enumerate(advs_np):
+                image_pil = Image.fromarray(np.transpose((adv_np * 255).astype(np.uint8), (1, 2, 0)))
+                image_pil.save(os.path.join(args.output_dir, os.path.splitext(names_list[idx])[0] + '.png'))
+        names_list = []
 
 
 if __name__ == '__main__':

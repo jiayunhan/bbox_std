@@ -16,8 +16,26 @@ from utils.torch_utils import numpy_to_variable, variable_to_numpy, convert_torc
 import pdb                       
 
 
-PICK_LIST = []
-BAN_LIST = ['dr_inception_v3_layerAt_3_eps_16_stepsize_4.0_steps_100_lossmtd_std']
+PICK_LIST = [
+    'tidim_vgg16_layerAt_00_eps_16_stepsize_3.2_steps_10',
+    'pgd_inception_v3_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'mifgsm_inception_v3_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'tidim_inception_v3_layerAt_00_eps_16_stepsize_3.2_steps_10',
+    'dr_inception_v3_layerAt_11_eps_16_stepsize_4.0_steps_100_lossmtd_std',
+    'dr_inception_v3_layerAt_9_eps_16_stepsize_4.0_steps_100_lossmtd_std',
+    'dr_inception_v3_layerAt_7_eps_16_stepsize_4.0_steps_100_lossmtd_std',
+    'dr_inception_v3_layerAt_5_eps_16_stepsize_4.0_steps_100_lossmtd_std',
+    'dr_inception_v3_layerAt_4_eps_16_stepsize_4.0_steps_100_lossmtd_std',
+    'dr_inception_v3_layerAt_3_eps_16_stepsize_4.0_steps_100_lossmtd_std',
+    'dr_inception_v3_layerAt_3_4_7_8_12_eps_16_stepsize_4.0_steps_100_lossmtd_std',
+    'dr_inception_v3_layerAt_3_4_7_8_12_eps_16_stepsize_4.0_steps_100_lossmtd_l1smooth_avg',
+    'pgd_resnet152_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'mifgsm_resnet152_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'dim_resnet152_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'tidim_resnet152_layerAt_00_eps_16_stepsize_3.2_steps_10',
+    'dr_resnet152_layerAt_8_eps_16_stepsize_2.0_steps_500_lossmtd_std'
+]
+BAN_LIST = []
 
 def parse_args(args):
     """ Parse the arguments.
@@ -44,6 +62,9 @@ def main(args=None):
         img_size = (416, 416)
     elif args.test_model == 'maskrcnn':
         test_model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True).cuda().eval()
+        img_size = (416, 416)
+    elif args.test_model == 'keypointrcnn':
+        test_model = torchvision.models.detection.keypointrcnn_resnet50_fpn(pretrained=True).cuda().eval()
         img_size = (416, 416)
 
     test_folders = []
@@ -74,6 +95,9 @@ def main(args=None):
             ori_img_path = os.path.join(input_dir, image_name)
             adv_img_path = os.path.join(args.dataset_dir, curt_folder, image_name)
             adv_img_path = os.path.splitext(adv_img_path)[0] + '.png'
+            if not os.path.exists(adv_img_path):
+                print('File {0} not found.'.format(image_name))
+                continue
             
             image_ori_np = load_image(data_format='channels_first', shape=img_size, bounds=(0, 1), abs_path=True, fpath=ori_img_path)
             Image.fromarray(np.transpose(image_ori_np * 255., (1, 2, 0)).astype(np.uint8)).save(os.path.join(result_dir, 'temp_ori.png'))
