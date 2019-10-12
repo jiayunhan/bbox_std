@@ -27,7 +27,9 @@ import pdb
 
 # python script_generate_adversarial_imagenet5000.py -tm inception_v3 --step-size 4 --steps 100
 
-DEBUG = True
+# CUDA_VISIBLE_DEVICES=3 python script_generate_adversarial_imagenet5000.py --adv-method dr -tm resnet152 --res152-attacklayer 5 --step-size 2 --steps 500 --batch-size 4
+
+DEBUG = False
 
 def parse_args(args):
     """ Parse the arguments.
@@ -72,13 +74,13 @@ def main(args=None):
             assert args.res152_attacklayer != -1
             target_model = Resnet152()
             internal = [i for i in range(9)]
-            attack_layer_idx = [args.res152_attacklayer]
+            attack_layer_idx = [args.res152_attacklayer] # #[4, 5, 6, 7]
             args_dic['image_size'] = (224, 224)
         elif args.target_model == 'inception_v3':
             assert args.inc3_attacklayer != -1
             target_model = Inception_v3()
             internal = [i for i in range(14)]
-            attack_layer_idx = [3, 4, 7, 8, 12] #[args.inc3_attacklayer]
+            attack_layer_idx =  [3, 4, 7, 8, 12] # [args.inc3_attacklayer]
             args_dic['image_size'] = (299, 299)
         else:
             raise
