@@ -17,7 +17,7 @@ from utils.mAP import save_detection_to_file, calculate_mAP_from_files
 import pdb                       
 
 
-PICK_LIST = []
+PICK_LIST = ['dr_inception_v3_layerAt_5_eps_16_stepsize_4.0_steps_100_lossmtd_selective_loss']
 BAN_LIST = []
 
 def parse_args(args):

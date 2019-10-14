@@ -43,6 +43,7 @@ def parse_args(args):
     parser.add_argument('--epsilon', help='Budget for attack.', default=16, type=int)
     parser.add_argument('--step-size', help='Step size in range of 0 - 255', default=1, type=float)
     parser.add_argument('--steps', help='Number of steps.', default=2000, type=int)
+    parser.add_argument('--vgg16-attacklayer', help='VGG16 attack layer idx.', default=14, type=int)
     parser.add_argument('--inc3-attacklayer', help='Inception v3 attack layer idx.', default=-1, type=int)
     parser.add_argument('--res152-attacklayer', help='Resnet152 attack layer idx.', default=-1, type=int)
 
@@ -66,9 +67,10 @@ def main(args=None):
     if args.adv_method == 'dr':
         loss_mtd = args.loss_method
         if args.target_model == 'vgg16':
+            assert args.vgg16_attacklayer != -1
             target_model = Vgg16()
             internal = [i for i in range(29)]
-            attack_layer_idx = [14] # 12, 14
+            attack_layer_idx = [args.vgg16_attacklayer] # 12, 14
             args_dic['image_size'] = (224, 224)
         elif args.target_model == 'resnet152':
             assert args.res152_attacklayer != -1
