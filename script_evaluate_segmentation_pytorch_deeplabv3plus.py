@@ -16,10 +16,7 @@ import pdb
 
 
 PICK_LIST = [
-    'dr_inception_v3_layerAt_5_eps_16_stepsize_4.0_steps_100_lossmtd_std',
-    'tidim_inception_v3_layerAt_00_eps_16_stepsize_3.2_steps_10',
-    'dim_resnet152_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
-    'tidim_resnet152_layerAt_00_eps_16_stepsize_3.2_steps_10',
+    'dr_inception_v3_layerAt_5_eps_16_stepsize_4.0_steps_100_lossmtd_selective_loss'
 ]
 BAN_LIST = []
 
