@@ -40,7 +40,7 @@ def main(args=None):
         lines = f.readlines()
         num_files = len(lines)
         assert num_files >= args.num_imgs
-        choices = np.random.choice(lines, args.num_imgs)
+        choices = np.random.choice(lines, args.num_imgs, replace=False)
         for curt_choice in choices:
             curt_path = os.path.join(args.folder, 'JPEGImages', curt_choice.strip() + '.jpg')
             shutil.copy(curt_path, os.path.join(args.output_dir, curt_choice.strip() + '.jpg'))
