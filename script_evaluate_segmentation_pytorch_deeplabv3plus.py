@@ -15,9 +15,10 @@ from utils.torch_utils import numpy_to_variable, variable_to_numpy
 import pdb
 
 
-PICK_LIST = [
-    'dr_inception_v3_layerAt_5_eps_16_stepsize_4.0_steps_100_lossmtd_selective_loss'
-]
+# python script_evaluate_segmentation_pytorch_deeplabv3plus.py resnet --dataset-dir /home/yantao/workspace/datasets/VOC2012_1000
+
+
+PICK_LIST = []
 BAN_LIST = []
 
 
@@ -122,8 +123,8 @@ def test(args):
         print(curt_folder, ' : ', result_str)
         result_dict[curt_folder] = result_str
 
-    with open('temp_cls_results_{0}.json'.format(args.backbone), 'w') as fout:
-        json.dump(result_dict, fout, indent=2)
+        with open('temp_seg_results_deeplabv3plus_{0}.json'.format(args.backbone), 'w') as fout:
+            json.dump(result_dict, fout, indent=2)
         
 
 def main(args=None):

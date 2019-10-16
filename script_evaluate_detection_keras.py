@@ -17,7 +17,10 @@ from utils.mAP import save_detection_to_file, calculate_mAP_from_files
 import pdb                       
 
 
-PICK_LIST = ['dr_inception_v3_layerAt_5_eps_16_stepsize_4.0_steps_100_lossmtd_selective_loss']
+# python script_evaluate_detection_keras.py yolov3 --dataset-dir /home/yantao/workspace/datasets/VOC2012_1000
+
+
+PICK_LIST = []
 BAN_LIST = []
 
 def parse_args(args):
@@ -48,7 +51,7 @@ def main(args=None):
         img_size = (416, 416)
     elif args.test_model == 'ssd_mobile':
         test_model = SSD_detector()
-        img_size = (500, 500) #(416, 416)
+        img_size = (500, 500)
 
     test_folders = []
     for temp_folder in os.listdir(args.dataset_dir):
@@ -111,8 +114,8 @@ def main(args=None):
         print(curt_folder, ' : ', mAP_score)
         result_dict[curt_folder] = str(mAP_score)
 
-    with open('temp_det_results_{0}.json'.format(args.test_model), 'w') as fout:
-        json.dump(result_dict, fout, indent=2)
+        with open('temp_det_results_{0}.json'.format(args.test_model), 'w') as fout:
+            json.dump(result_dict, fout, indent=2)
 
 
 if __name__ == '__main__':

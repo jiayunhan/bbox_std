@@ -16,7 +16,10 @@ from utils.torch_utils import numpy_to_variable, variable_to_numpy, convert_torc
 import pdb                       
 
 
-PICK_LIST = ['dr_inception_v3_layerAt_5_eps_16_stepsize_4.0_steps_100_lossmtd_selective_loss']
+# python script_evaluate_detection_pytorch.py fasterrcnn --dataset-dir /home/yantao/workspace/datasets/VOC2012_1000
+
+
+PICK_LIST = []
 BAN_LIST = []
 
 def parse_args(args):
@@ -115,8 +118,8 @@ def main(args=None):
         print(curt_folder, ' : ', mAP_score)
         result_dict[curt_folder] = str(mAP_score)
 
-    with open('temp_det_results_{0}.json'.format(args.test_model), 'w') as fout:
-        json.dump(result_dict, fout, indent=2)
+        with open('temp_det_results_{0}.json'.format(args.test_model), 'w') as fout:
+            json.dump(result_dict, fout, indent=2)
 
 
 if __name__ == '__main__':
