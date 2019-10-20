@@ -20,7 +20,10 @@ import pdb
 # python script_evaluate_detection_keras.py yolov3 --dataset-dir /home/yantao/workspace/datasets/VOC2012_1000
 
 
-PICK_LIST = []
+PICK_LIST = [
+    'dr_vgg16_layerAt_12_eps_16_stepsize_2.0_steps_500_lossmtd_std',
+    'dr_vgg16_layerAt_14_eps_16_stepsize_2.0_steps_500_lossmtd_std'
+]
 BAN_LIST = []
 
 def parse_args(args):

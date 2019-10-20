@@ -19,7 +19,12 @@ import pdb
 # python script_evaluate_detection_pytorch.py fasterrcnn --dataset-dir /home/yantao/workspace/datasets/VOC2012_1000
 
 
-PICK_LIST = []
+PICK_LIST = [
+    'dr_vgg16_layerAt_12_eps_16_stepsize_4.0_steps_100_lossmtd_std',
+    'dr_vgg16_layerAt_14_eps_16_stepsize_4.0_steps_100_lossmtd_std',
+    'dr_resnet152_layerAt_5_eps_16_stepsize_4.0_steps_100_lossmtd_std',
+    'dr_resnet152_layerAt_5_eps_16_stepsize_2.0_steps_500_lossmtd_std'
+]
 BAN_LIST = []
 
 def parse_args(args):
@@ -51,6 +56,8 @@ def main(args=None):
     elif args.test_model == 'keypointrcnn':
         test_model = torchvision.models.detection.keypointrcnn_resnet50_fpn(pretrained=True).cuda().eval()
         img_size = (416, 416)
+    else:
+        raise ValueError('Invalid test_model {0}'.format(args.test_model))
 
     test_folders = []
     for temp_folder in os.listdir(args.dataset_dir):
