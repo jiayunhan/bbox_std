@@ -73,7 +73,7 @@ def to_coordinates(image, coords):
     right = coords[3] * image.size[0]
     return [top, left, bottom, right]
 
-def draw_boxes(image, labels, boxes):
+def draw_boxes_old(image, labels, boxes):
     thickness = (image.size[0] + image.size[1]) // 300
     '''
     draw = ImageDraw.Draw(image)
@@ -127,6 +127,120 @@ def save_bbox_img(img, bbox_list, from_path=True, out_file='temp.jpg'):
         draw.rectangle([int(left), int(top), int(right), int(bottom)])
 
     source_img.save(out_file)
+
+def draw_boxes(image, det_out, from_path=True, out_file='temp_bbox_img.png'):
+    """Draw output bounding boxes and scores on images."""
+    from PIL import Image
+    from PIL import ImageFont
+    from PIL import ImageDraw
+    import colorsys
+
+    if from_path:
+        source_img = Image.open(image).convert("RGB")
+    else:
+        source_img = Image.fromarray(image)
+
+    if det_out is None:
+        source_img.cpoy().save(out_file)
+        return
+
+    out_boxes = det_out['boxes']
+    out_classes = det_out['classes']
+    out_scores = det_out['scores']
+    class_names = det_out['namelist']
+
+    font_path = os.path.join(
+        os.path.dirname(__file__),
+        '../models/yolov3/model_data/FiraMono-Medium.otf')
+    font = ImageFont.truetype(
+        font=font_path,
+        size=np.floor(3e-2 * source_img.size[1] + 0.5).astype('int32'))
+    thickness = (source_img.size[0] + source_img.size[1]) // 300
+    image = source_img.copy()
+    def _init_color(random_seed, num_classes):
+        # Generate colors for drawing bounding boxes.
+        hsv_tuples = [(x / len(class_names), 1., 1.)
+                      for x in range(len(class_names))]
+        colors = list(map(lambda x: colorsys.hsv_to_rgb(*x), hsv_tuples))
+        colors = list(
+            map(lambda x: (int(x[0] * 255), int(x[1] * 255), int(x[2] * 255)),
+                colors))
+        np.random.seed(random_seed)  # Fixed seed for colors across runs.
+        np.random.shuffle(colors)  # Shuffle to decorrelate adjacent classes.
+        np.random.seed(None)  # Reset seed to default.
+        return colors
+
+    colors = _init_color(10101, len(class_names))
+
+    for i, c in reversed(list(enumerate(out_classes))):
+        predicted_class = class_names[c]
+        box = out_boxes[i]
+        score = out_scores[i]
+
+        label = '{} {:.2f}'.format(predicted_class, score)
+        draw = ImageDraw.Draw(image)
+        label_size = draw.textsize(label, font)
+
+        top, left, bottom, right = box
+        top = max(0, np.floor(top + 0.5).astype('int32'))
+        left = max(0, np.floor(left + 0.5).astype('int32'))
+        bottom = min(image.size[1], np.floor(bottom + 0.5).astype('int32'))
+        right = min(image.size[0], np.floor(right + 0.5).astype('int32'))
+
+        if top - label_size[1] >= 0:
+            text_origin = np.array([left, top - label_size[1]])
+        else:
+            text_origin = np.array([left, top + 1])
+
+        # My kingdom for a good redistributable image drawing library.
+        for i in range(thickness):
+            draw.rectangle(
+                [left + i, top + i, right - i, bottom - i],
+                outline=colors[c])
+        draw.rectangle(
+            [tuple(text_origin), tuple(text_origin + label_size)],
+            fill=colors[c])
+        draw.text(text_origin, label, fill=(0, 0, 0), font=font)
+        del draw
+        image.save(out_file)
+    return
+
+def draw_masks(image, mask, num_classes, from_path=True, out_file='temp_mask_img.png'):
+    """Draw output masks on images."""
+    from PIL import Image
+    from PIL import ImageFont
+    from PIL import ImageDraw
+    import colorsys
+
+    if from_path:
+        source_img = Image.open(image).convert("RGB")
+    else:
+        source_img = Image.fromarray(image)
+
+    image = source_img.copy()
+
+    def _init_color(random_seed, num_classes):
+        # Generate colors for drawing bounding boxes.
+        hsv_tuples = [(x / num_classes, 1., 1.)
+                      for x in range(num_classes)]
+        colors = list(map(lambda x: colorsys.hsv_to_rgb(*x), hsv_tuples))
+        colors = list(
+            map(lambda x: (int(x[0] * 255), int(x[1] * 255), int(x[2] * 255)),
+                colors))
+        np.random.seed(random_seed)  # Fixed seed for colors across runs.
+        np.random.shuffle(colors)  # Shuffle to decorrelate adjacent classes.
+        np.random.seed(None)  # Reset seed to default.
+        return colors
+
+    colors = _init_color(10101, num_classes)
+    mask_rgb = np.zeros((mask.shape[0], mask.shape[1], 3)).astype(np.uint8)
+    for h in range(mask_rgb.shape[0]):
+        for w in range(mask_rgb.shape[1]):
+            mask_rgb[h, w] = colors[mask[h, w]]
+
+    mask_img = 0.5 * np.array(image).astype(np.int32) + 0.5 * mask_rgb.astype(np.int32)
+    Image.fromarray(mask_img.astype(np.uint8)).save(out_file)
+    return
 
 def visualize_features(intermediate_features, output_dir, file_prefix='', data_format='channels_last', image_size=(224, 224), only_first_channel=True):
     if data_format == 'channels_last':

@@ -100,6 +100,8 @@ class YOLOv3(object):
             'boxes' : [[top, left, bottom, right], ...]
             'scores' : [float, ...]
             'classes' : [int, ...]
+            'class_names' : [str, ...]
+            'namelist' : list of class names
         }
         '''
         
@@ -108,10 +110,13 @@ class YOLOv3(object):
         prediction['boxes'] = []
         prediction['scores'] = []
         prediction['classes'] = []
+        prediction['class_names'] = []
+        prediction['namelist'] = self.class_names
         for temp_box, temp_score, temp_class in zip(out_boxes, out_scores, out_classes):
             prediction['boxes'].append(temp_box.tolist())
             prediction['scores'].append(temp_score)
             prediction['classes'].append(temp_class)
+            prediction['class_names'].append(self.class_names[temp_class])
 
         return prediction
         

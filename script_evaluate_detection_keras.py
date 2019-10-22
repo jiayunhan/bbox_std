@@ -66,7 +66,7 @@ def main(args=None):
         test_folders.append(temp_folder)
 
     result_dict = {}
-    for curt_folder in test_folders:
+    for curt_folder in tqdm(test_folders):
         print('Folder : {0}'.format(curt_folder))
 
         result_dir = 'temp_dect_results'
