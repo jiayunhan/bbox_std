@@ -25,7 +25,7 @@ def main(args=None):
     args = parse_args(args)
 
     if os.path.exists(args.output_dir):
-        raise ValueError('Output folder {0} exisited.'format(args.output_dir))
+        raise ValueError('Output folder {0} exisited.'.format(args.output_dir))
     os.mkdir(args.output_dir)
 
     name_list = os.listdir(args.folder)
