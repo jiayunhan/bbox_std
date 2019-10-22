@@ -23,10 +23,12 @@ import pdb
 PICK_LIST = [
     'dim_vgg16_layerAt_00_eps_16_stepsize_25.5_steps_40',
     'tidim_vgg16_layerAt_00_eps_16_stepsize_3.2_steps_10',
-    'dr_vgg16_layerAt_12_eps_16_stepsize_4.0_steps_100_lossmtd_std',
-    'dr_vgg16_layerAt_14_eps_16_stepsize_4.0_steps_100_lossmtd_std',
     'pgd_inception_v3_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
     'dim_resnet152_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'dr_vgg16_layerAt_12_eps_16_stepsize_4.0_steps_100_lossmtd_std',
+    'dr_vgg16_layerAt_12_eps_16_stepsize_2.0_steps_500_lossmtd_std',
+    'dr_vgg16_layerAt_14_eps_16_stepsize_4.0_steps_100_lossmtd_std',
+    'dr_vgg16_layerAt_14_eps_16_stepsize_2.0_steps_500_lossmtd_std',
     'dr_resnet152_layerAt_5_eps_16_stepsize_4.0_steps_100_lossmtd_std'
 ]
 BAN_LIST = []
