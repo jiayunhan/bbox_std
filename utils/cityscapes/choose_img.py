@@ -42,7 +42,7 @@ def main(args=None):
     for curt_choice in choices:
         curt_name = curt_choice.split('/')[-1]
         shutil.copy(curt_path, os.path.join(args.output_dir, curt_name)
-    
+    return 
 
 if __name__ == '__main__':
     main()
