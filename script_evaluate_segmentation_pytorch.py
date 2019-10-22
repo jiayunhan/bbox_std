@@ -21,15 +21,23 @@ import pdb
 
 
 PICK_LIST = [
-    'dim_vgg16_layerAt_00_eps_16_stepsize_25.5_steps_40',
+    'pgd_vgg16_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'mifgsm_vgg16_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'dim_vgg16_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
     'tidim_vgg16_layerAt_00_eps_16_stepsize_3.2_steps_10',
-    'pgd_inception_v3_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
-    'dim_resnet152_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
     'dr_vgg16_layerAt_12_eps_16_stepsize_4.0_steps_100_lossmtd_std',
-    'dr_vgg16_layerAt_12_eps_16_stepsize_2.0_steps_500_lossmtd_std',
     'dr_vgg16_layerAt_14_eps_16_stepsize_4.0_steps_100_lossmtd_std',
-    'dr_vgg16_layerAt_14_eps_16_stepsize_2.0_steps_500_lossmtd_std',
-    'dr_resnet152_layerAt_5_eps_16_stepsize_4.0_steps_100_lossmtd_std'
+    'pgd_inception_v3_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'mifgsm_inception_v3_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'dim_inception_v3_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'tidim_inception_v3_layerAt_00_eps_16_stepsize_3.2_steps_10',
+    'dr_inception_v3_layerAt_5_eps_16_stepsize_4.0_steps_100_lossmtd_selective_loss',
+    'dr_inception_v3_layerAt_5_eps_16_stepsize_2.0_steps_500_lossmtd_selective_loss',
+    'pgd_resnet152_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'mifgsm_resnet152_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'dim_resnet152_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'tidim_resnet152_layerAt_00_eps_16_stepsize_3.2_steps_10',
+    'dr_resnet152_layerAt_5_eps_16_stepsize_4.0_steps_100_lossmtd_std',
 ]
 BAN_LIST = []
 
@@ -72,7 +80,7 @@ def test(args):
             num_classes=21
         )
         model = model.cuda().eval()
-        img_size = (520, 520)
+        img_size = (1024, 1024) #(520, 520)
         img_mean = [0.485, 0.456, 0.406]
         img_std = [0.229, 0.224, 0.225]
         img_transforms = torchvision.transforms.Compose([
