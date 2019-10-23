@@ -166,9 +166,11 @@ def main(args=None):
                 loss_mtd
             )
         )
+        
         if os.path.exists(args.output_dir):
             raise ValueError('Output folder existed.')
         os.mkdir(args.output_dir)
+        
 
     count = 0
     images_list = []
