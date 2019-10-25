@@ -108,6 +108,9 @@ def test(args):
             torchvision.transforms.ToTensor(), 
             torchvision.transforms.Normalize(mean=img_mean, std=img_std)])
 
+    else:
+        raise ValueError(' ')
+
     evaluator = Evaluator(args.num_classes)
 
     test_folders = []
@@ -142,7 +145,8 @@ def test(args):
                 #Image.fromarray(np.transpose(image_ori_np * 255., (1, 2, 0)).astype(np.uint8)).save('ori.jpg')
                 image_ori_var = numpy_to_variable(image_ori_np)
                 with torch.no_grad():
-                    output_ori = model(image_ori_var)
+                    if args.test_model == 'deeplabv3plus':
+                        output_ori = model(image_ori_var)
             else:
                 image_ori_var = img_transforms(Image.open(ori_img_path).convert('RGB')).unsqueeze_(axis=0).cuda()
                 with torch.no_grad():
@@ -161,7 +165,8 @@ def test(args):
                 #Image.fromarray(np.transpose(image_adv_np * 255., (1, 2, 0)).astype(np.uint8)).save('temp_adv.jpg')
                 image_adv_var = numpy_to_variable(image_adv_np)
                 with torch.no_grad():
-                    output_adv = model(image_adv_var)
+                    if args.test_model == 'deeplabv3plus':
+                        output_adv = model(image_adv_var)
             else:
                 image_adv_var = img_transforms(Image.open(adv_img_path).convert('RGB')).unsqueeze_(axis=0).cuda()
                 with torch.no_grad():
