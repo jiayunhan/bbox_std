@@ -112,7 +112,7 @@ def main(args=None):
         mAP_score = calculate_mAP_from_files(os.path.join(result_dir, 'gt'), os.path.join(result_dir, 'pd'))
         shutil.rmtree(result_dir)
         print(curt_folder, ' : ', mAP_score)
-        result_dict[curt_folder] = str(mAP_score)
+        result_dict[curt_folder] = 'mAP: {0:.04f}'.format(mAP_score)
 
         with open('temp_det_results_{0}.json'.format(args.test_model), 'w') as fout:
             json.dump(result_dict, fout, indent=2)
