@@ -47,10 +47,9 @@ def main(args=None):
     for line in lines:
         if line.strip() in seg_names_list_noext:
             val_names.append(line.strip())
-    pdb.set_trace()
-    num_files = len(lines)
+    num_files = len(val_names)
     assert num_files >= args.num_imgs
-    choices = np.random.choice(lines, args.num_imgs, replace=False)
+    choices = np.random.choice(val_names, args.num_imgs, replace=False)
     for curt_choice in choices:
         curt_path = os.path.join(args.folder, 'JPEGImages', curt_choice.strip() + '.jpg')
         shutil.copy(curt_path, os.path.join(args.output_dir, curt_choice.strip() + '.jpg'))
