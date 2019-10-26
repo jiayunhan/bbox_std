@@ -37,7 +37,7 @@ def main(args=None):
 
     name_file_path = os.path.join(args.folder, 'ImageSets', 'Main', args.name_file)
     seg_names_list = os.listdir(os.path.join(args.folder, 'SegmentationClass'))
-    seg_names_list_npext = []
+    seg_names_list_noext = []
     for temp_name in seg_names_list:
         seg_names_list_noext.append(os.path.splitext(temp_name)[0])
     
