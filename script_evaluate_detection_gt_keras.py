@@ -13,23 +13,23 @@ from models.retina_resnet50.keras_retina_resnet50 import KerasResNet50RetinaNetM
 from models.ssd_mobilenet.SSD import SSD_detector
 from utils.image_utils import load_image, save_image, save_bbox_img
 from utils.mAP import save_detection_to_file, calculate_mAP_from_files
+from utils.VOC2012_1000.annotation_loader import load_annotations as load_voc_annotations
 
 import pdb                       
 
 
-# python script_evaluate_detection_keras.py yolov3 --dataset-dir /home/yantao/workspace/datasets/VOC2012_1000
+# python script_evaluate_detection_gt_keras.py yolov3 coco --dataset-dir /home/yantao/workspace/datasets/VOC2012_1000
 
 
-PICK_LIST = [
-    'dr_inception_v3_layerAt_5_eps_16_stepsize_2.0_steps_500_lossmtd_selective_loss'
-]
+PICK_LIST = ['ori']
 BAN_LIST = []
 
 def parse_args(args):
     """ Parse the arguments.
     """
     parser = argparse.ArgumentParser(description='Script for generating adversarial examples.')
-    parser.add_argument('test_model', help='Model for testing AEs.', type=str)
+    parser.add_argument('test_model', choice=['coco', 'voc'], help='Model for testing AEs.', type=str)
+    parser.add_argument('dataset_type', help='Dataset for testing AEs.', type=str)
     parser.add_argument('--dataset-dir', help='Dataset folder path.', default='/home/yantao/workspace/datasets/imagenet5000', type=str)
 
     return parser.parse_args()
@@ -40,10 +40,7 @@ def main(args=None):
     args = parse_args(args)
     args_dic = vars(args)
 
-    with open('utils/labels.txt','r') as inf:
-        args_dic['imagenet_dict'] = eval(inf.read())
-
-    input_dir = os.path.join(args.dataset_dir, 'ori')
+    gt_dir = os.path.join(args.dataset_dir, '_annotations')
 
     if args.test_model == 'yolov3':
         test_model = YOLOv3(sess = K.get_session())
@@ -59,7 +56,7 @@ def main(args=None):
     for temp_folder in os.listdir(args.dataset_dir):
         if not os.path.isdir(os.path.join(args.dataset_dir, temp_folder)):
             continue 
-        if temp_folder == 'imagenet_val_5000' or temp_folder == 'ori' or temp_folder == '.git' or temp_folder == '_annotations':
+        if temp_folder == 'imagenet_val_5000' or temp_folder == '.git' or temp_folder == '_annotations':
             continue 
         if len(PICK_LIST) != 0 and temp_folder not in PICK_LIST:
             continue
@@ -78,25 +75,31 @@ def main(args=None):
         os.mkdir(os.path.join(result_dir, 'gt'))
         os.mkdir(os.path.join(result_dir, 'pd'))
 
-        for image_name in tqdm(os.listdir(input_dir)):
-            temp_image_name_noext = os.path.splitext(image_name)[0]
-            ori_img_path = os.path.join(input_dir, image_name)
-            adv_img_path = os.path.join(args.dataset_dir, curt_folder, image_name)
-            adv_img_path = os.path.splitext(adv_img_path)[0] + '.png'
+        for gt_name in tqdm(os.listdir(gt_dir)):
+            temp_image_name_noext = os.path.splitext(gt_name)[0]
+            gt_path = os.path.join(gt_dir, gt_name)
+            if curt_folder == 'ori':
+                adv_img_path = os.path.join(args.dataset_dir, curt_folder, temp_image_name_noext + '.jpg')
+            else:
+                adv_img_path = os.path.join(args.dataset_dir, curt_folder, temp_image_name_noext + '.png')
+
             if not os.path.exists(adv_img_path):
-                print('File {0} not found.'.format(image_name))
+                print('File {0} not found.'.format(adv_img_path))
                 continue
             
-            image_ori_np = load_image(data_format='channels_last', shape=img_size, bounds=(0, 255), abs_path=True, fpath=ori_img_path)
-            Image.fromarray((image_ori_np).astype(np.uint8)).save(os.path.join(result_dir, 'ori.jpg'))
-            image_ori_pil = Image.fromarray(image_ori_np.astype(np.uint8))
-            gt_out = test_model.predict(image_ori_pil)
+            if args.dataset_type == 'voc':
+                gt_out = load_voc_annotations(gt_path, img_size)
+            elif args.dataset_type == 'coco':
+                gt_out = load_coco_annotations(gt_path, img_size)
             
             image_adv_np = load_image(data_format='channels_last', shape=img_size, bounds=(0, 255), abs_path=True, fpath=adv_img_path)
             Image.fromarray((image_adv_np).astype(np.uint8)).save(os.path.join(result_dir, 'temp_adv.jpg'))
             image_adv_pil = Image.fromarray(image_adv_np.astype(np.uint8))
             pd_out = test_model.predict(image_adv_pil)
-
+            print(pd_out)
+            print(gt_out)
+            pdb.set_trace()
+            continue
             save_detection_to_file(gt_out, os.path.join(result_dir, 'gt', temp_image_name_noext + '.txt'), 'ground_truth')
             save_detection_to_file(pd_out, os.path.join(result_dir, 'pd', temp_image_name_noext + '.txt'), 'detection')
             

@@ -19,7 +19,9 @@ import pdb
 # python script_evaluate_detection_pytorch.py fasterrcnn --dataset-dir /home/yantao/workspace/datasets/VOC2012_1000
 
 
-PICK_LIST = []
+PICK_LIST = [
+    'dr_inception_v3_layerAt_5_eps_16_stepsize_2.0_steps_500_lossmtd_selective_loss'
+]
 BAN_LIST = []
 
 def parse_args(args):
@@ -58,7 +60,7 @@ def main(args=None):
     for temp_folder in os.listdir(args.dataset_dir):
         if not os.path.isdir(os.path.join(args.dataset_dir, temp_folder)):
             continue 
-        if temp_folder == 'imagenet_val_5000' or temp_folder == 'ori' or temp_folder == '.git':
+        if temp_folder == 'imagenet_val_5000' or temp_folder == 'ori' or temp_folder == '.git' or temp_folder == '_annotations':
             continue 
         if len(PICK_LIST) != 0 and temp_folder not in PICK_LIST:
             continue
