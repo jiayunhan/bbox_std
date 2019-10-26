@@ -3,11 +3,11 @@ import shutil
 
 import pdb
 
-ori_dir = '/home/yantao/workspace/datasets/VOC2012_1000/ori'
+ori_dir = '/home/yantao/workspace/datasets/VOC2012_1000_gt/ori'
 ann_dir = '/home/yantao/_annotations'
-ann_out_dir = '/home/yantao/workspace/datasets/VOC2012_1000/_annotations'
+ann_out_dir = '/home/yantao/workspace/datasets/VOC2012_1000_gt/_annotations'
 seg_dir = '/home/yantao/_segmentations'
-seg_out_dir = '/home/yantao/workspace/datasets/VOC2012_1000/_segmentations'
+seg_out_dir = '/home/yantao/workspace/datasets/VOC2012_1000_gt/_segmentations'
 
 
 os.mkdir(ann_out_dir)
