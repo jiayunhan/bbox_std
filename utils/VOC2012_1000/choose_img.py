@@ -43,6 +43,10 @@ def main(args=None):
     
     with open(name_file_path, 'r') as f:
         lines = f.readlines()
+    val_names = []
+    for line in lines:
+        if line.strip() in seg_names_list_noext:
+            val_names.append(line.strip())
     pdb.set_trace()
     num_files = len(lines)
     assert num_files >= args.num_imgs
