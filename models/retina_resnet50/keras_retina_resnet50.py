@@ -119,7 +119,7 @@ class KerasResNet50RetinaNetModel():
                                                         labels):
                 if temp_score >= self._th_conf:
                     temp_box = np.array(
-                        [temp_box[1], temp_box[0], temp_box[3], temp_box[2]])
+                        [temp_box[0], temp_box[1], temp_box[2], temp_box[3]])
                     out_boxes.append(temp_box)
                     out_scores.append(temp_score)
                     out_classes.append(temp_class)

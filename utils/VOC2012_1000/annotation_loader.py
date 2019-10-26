@@ -63,13 +63,13 @@ def __parse_annotation(element, ratio):
     class_name = _findNode(element, 'name').text
 
     box = np.zeros((4,))
-    label = name_to_label(class_name)
+    label = int(name_to_label(class_name))
 
     bndbox    = _findNode(element, 'bndbox')
-    box[0] = float(_findNode(bndbox, 'xmin', 'bndbox.xmin', parse=float) - 1) * ratio[0]
-    box[1] = float(_findNode(bndbox, 'ymin', 'bndbox.ymin', parse=float) - 1) * ratio[1]
-    box[2] = float(_findNode(bndbox, 'xmax', 'bndbox.xmax', parse=float) - 1) * ratio[0]
-    box[3] = float(_findNode(bndbox, 'ymax', 'bndbox.ymax', parse=float) - 1) * ratio[1]
+    box[0] = float(_findNode(bndbox, 'ymin', 'bndbox.ymin', parse=float) - 1) * ratio[0]
+    box[1] = float(_findNode(bndbox, 'xmin', 'bndbox.xmin', parse=float) - 1) * ratio[1]
+    box[2] = float(_findNode(bndbox, 'ymax', 'bndbox.ymax', parse=float) - 1) * ratio[0]
+    box[3] = float(_findNode(bndbox, 'xmax', 'bndbox.xmax', parse=float) - 1) * ratio[1]
 
     return truncated, difficult, box, label
 
@@ -80,15 +80,20 @@ def __parse_annotations(xml_root, img_size):
     gt_h = int(xml_root.find('size').find('height').text)
     ratio = (float(img_size[0]) / float(gt_h), float(img_size[1]) / float(gt_w))
 
-    annotations = {'labels': np.empty((len(xml_root.findall('object')),)), 'bboxes': np.empty((len(xml_root.findall('object')), 4))}
+    annotations = {
+        'classes': np.empty((len(xml_root.findall('object')),)), 
+        'scores': np.ones((len(xml_root.findall('object')),)), 
+        'boxes': np.empty((len(xml_root.findall('object')), 4))
+    }
     for i, element in enumerate(xml_root.iter('object')):
         try:
             truncated, difficult, box, label = __parse_annotation(element, ratio)
         except ValueError as e:
             raise_from(ValueError('could not parse object #{}: {}'.format(i, e)), None)
 
-        annotations['bboxes'][i, :] = box
-        annotations['labels'][i] = label
+        annotations['boxes'][i, :] = box
+        annotations['classes'][i] = label
+    annotations['classes'] = annotations['classes'].astype(np.int)
 
     return annotations
 

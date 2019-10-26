@@ -36,14 +36,20 @@ def main(args=None):
         raise NotImplementedError
 
     name_file_path = os.path.join(args.folder, 'ImageSets', 'Main', args.name_file)
+    seg_names_list = os.listdir(os.path.join(args.folder, 'SegmentationClass'))
+    seg_names_list_npext = []
+    for temp_name in seg_names_list:
+        seg_names_list_noext.append(os.path.splitext(temp_name)[0])
+    
     with open(name_file_path, 'r') as f:
         lines = f.readlines()
-        num_files = len(lines)
-        assert num_files >= args.num_imgs
-        choices = np.random.choice(lines, args.num_imgs, replace=False)
-        for curt_choice in choices:
-            curt_path = os.path.join(args.folder, 'JPEGImages', curt_choice.strip() + '.jpg')
-            shutil.copy(curt_path, os.path.join(args.output_dir, curt_choice.strip() + '.jpg'))
+    pdb.set_trace()
+    num_files = len(lines)
+    assert num_files >= args.num_imgs
+    choices = np.random.choice(lines, args.num_imgs, replace=False)
+    for curt_choice in choices:
+        curt_path = os.path.join(args.folder, 'JPEGImages', curt_choice.strip() + '.jpg')
+        shutil.copy(curt_path, os.path.join(args.output_dir, curt_choice.strip() + '.jpg'))
     
 
 if __name__ == '__main__':

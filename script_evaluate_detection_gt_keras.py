@@ -20,6 +20,51 @@ import pdb
 
 # python script_evaluate_detection_gt_keras.py yolov3 coco --dataset-dir /home/yantao/workspace/datasets/VOC2012_1000
 
+# {voc_idx : coco_idx}
+VOC_AND_COCO80_CLASSES = {
+    0 : 4,
+    1 : 1,
+    2 : 14,
+    3 : 8,
+    4 : 39,
+    5 : 5,
+    6 : 2,
+    7 : 15,
+    8 : 56,
+    9 : 19,
+    10 : 60,
+    11 : 16,
+    12 : 17,
+    13 : 3,
+    14 : 0,
+    15 : 58,
+    16 : 18,
+    17 : 57,
+    18 : 6,
+    19 : 62
+}
+VOC_AND_COCO91_CLASSES = {
+    0 : 5,
+    1 : 2,
+    2 : 16,
+    3 : 9,
+    4 : 44,
+    5 : 6,
+    6 : 3,
+    7 : 17,
+    8 : 62,
+    9 : 21,
+    10 : 67,
+    11 : 18,
+    12 : 19,
+    13 : 4,
+    14 : 1,
+    15 : 64,
+    16 : 20,
+    17 : 63,
+    18 : 7,
+    19 : 72
+}
 
 PICK_LIST = ['ori']
 BAN_LIST = []
@@ -28,8 +73,8 @@ def parse_args(args):
     """ Parse the arguments.
     """
     parser = argparse.ArgumentParser(description='Script for generating adversarial examples.')
-    parser.add_argument('test_model', choice=['coco', 'voc'], help='Model for testing AEs.', type=str)
-    parser.add_argument('dataset_type', help='Dataset for testing AEs.', type=str)
+    parser.add_argument('test_model', help='Model for testing AEs.', type=str)
+    parser.add_argument('dataset_type', choices=['coco', 'voc'], help='Dataset for testing AEs.', type=str)
     parser.add_argument('--dataset-dir', help='Dataset folder path.', default='/home/yantao/workspace/datasets/imagenet5000', type=str)
 
     return parser.parse_args()
@@ -89,6 +134,7 @@ def main(args=None):
             
             if args.dataset_type == 'voc':
                 gt_out = load_voc_annotations(gt_path, img_size)
+                gt_out['classes'] = gt_out['classes'].astype(np.int)
             elif args.dataset_type == 'coco':
                 gt_out = load_coco_annotations(gt_path, img_size)
             
@@ -96,18 +142,12 @@ def main(args=None):
             Image.fromarray((image_adv_np).astype(np.uint8)).save(os.path.join(result_dir, 'temp_adv.jpg'))
             image_adv_pil = Image.fromarray(image_adv_np.astype(np.uint8))
             pd_out = test_model.predict(image_adv_pil)
-            print(pd_out)
-            print(gt_out)
-            pdb.set_trace()
-            continue
+            if args.dataset_type == 'voc':
+                pd_out = _transfer_label(pd_out, args)
+
             save_detection_to_file(gt_out, os.path.join(result_dir, 'gt', temp_image_name_noext + '.txt'), 'ground_truth')
             save_detection_to_file(pd_out, os.path.join(result_dir, 'pd', temp_image_name_noext + '.txt'), 'detection')
             
-            
-            if gt_out:
-                save_bbox_img(os.path.join(result_dir, 'ori.jpg'), gt_out['boxes'], out_file='temp_ori_box.jpg')
-            else:
-                save_bbox_img(os.path.join(result_dir, 'ori.jpg'), [], out_file='temp_ori_box.jpg')
             if pd_out:
                 save_bbox_img(os.path.join(result_dir, 'temp_adv.jpg'), pd_out['boxes'], out_file='temp_adv_box.jpg')
             else:
@@ -115,12 +155,38 @@ def main(args=None):
             
 
         mAP_score = calculate_mAP_from_files(os.path.join(result_dir, 'gt'), os.path.join(result_dir, 'pd'))
+        pdb.set_trace()
         shutil.rmtree(result_dir)
         print(curt_folder, ' : ', mAP_score)
         result_dict[curt_folder] = 'mAP: {0:.04f}'.format(mAP_score)
 
         with open('temp_det_results_{0}.json'.format(args.test_model), 'w') as fout:
             json.dump(result_dict, fout, indent=2)
+
+def _transfer_label(pd_out, args):
+    if args.test_model == 'ssd_mobile':
+        voc_and_coco_classes = VOC_AND_COCO91_CLASSES
+    elif args.test_model == 'yolov3' or 'retina_resnet50':
+        voc_and_coco_classes = VOC_AND_COCO80_CLASSES
+
+    ret = {
+        'classes' : [],
+        'scores' : [],
+        'boxes' : []
+    }
+    for key in pd_out.keys():
+        if key not in ret.keys():
+            ret[key] = pd_out[key]
+    classes_list = pd_out['classes']
+    scores_list = pd_out['scores']
+    boxes_list = pd_out['boxes']
+    for idx, temp_class in enumerate(classes_list):
+        for key, val in voc_and_coco_classes.items():
+            if int(temp_class) == val:
+                ret['classes'].append(int(key))
+                ret['scores'].append(scores_list[idx])
+                ret['boxes'].append(boxes_list[idx])
+    return ret
 
 
 if __name__ == '__main__':
