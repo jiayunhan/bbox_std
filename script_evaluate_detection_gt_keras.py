@@ -12,7 +12,6 @@ from pycocotools.coco import COCO
 
 from models.yolov3.yolov3_wrapper import YOLOv3
 from models.retina_resnet50.keras_retina_resnet50 import KerasResNet50RetinaNetModel
-from models.retina_resnet50.retinanet_resnet_50.utils.image import preprocess_image
 from models.ssd_mobilenet.SSD import SSD_detector
 from utils.image_utils import load_image, save_image, save_bbox_img
 from utils.mAP import save_detection_to_file, calculate_mAP_from_files
