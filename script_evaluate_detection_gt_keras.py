@@ -9,9 +9,13 @@ from tqdm import tqdm
 import argparse
 import pickle
 from pycocotools.coco import COCO
+import cv2
 
 from models.yolov3.yolov3_wrapper import YOLOv3
 from models.retina_resnet50.keras_retina_resnet50 import KerasResNet50RetinaNetModel
+from models.retina_resnet50.retinanet_resnet_50.utils.image import read_image_bgr, preprocess_image, resize_image, resize_image_2
+from models.retina_resnet50.retinanet_resnet_50.utils.colors import label_color
+from models.retina_resnet50.retinanet_resnet_50.utils.visualization import draw_box, draw_caption
 from models.ssd_mobilenet.SSD import SSD_detector
 from utils.image_utils import load_image, save_image, save_bbox_img
 from utils.mAP import save_detection_to_file, calculate_mAP_from_files
@@ -30,9 +34,7 @@ with open('utils/VOC_AND_COCO91_CLASSES.pkl', 'rb') as f:
 with open('utils/VOC_AND_COCO80_CLASSES.pkl', 'rb') as f:
     VOC_AND_COCO80_CLASSES = pickle.load(f)
 
-PICK_LIST = [
-    'ori'
-]
+PICK_LIST = []
 BAN_LIST = []
 
 def parse_args(args):
@@ -108,11 +110,46 @@ def main(args=None):
                 gt_out['classes'] = gt_out['classes'].astype(np.int)
             elif args.dataset_type == 'coco':
                 gt_out = load_coco_annotations(temp_image_name_noext, img_size, gt_loader)
-            
+
             image_adv_np = load_image(data_format='channels_last', shape=img_size, bounds=(0, 255), abs_path=True, fpath=adv_img_path)
             Image.fromarray((image_adv_np).astype(np.uint8)).save(os.path.join(result_dir, 'temp_adv.jpg'))
-            image_adv_pil = Image.fromarray(image_adv_np.astype(np.uint8))
-            pd_out = test_model.predict(image_adv_pil)
+            if args.test_model == 'retina_resnet50':
+                '''
+                labels_to_names = {0: 'person', 1: 'bicycle', 2: 'car', 3: 'motorcycle', 4: 'airplane', 5: 'bus', 6: 'train', 7: 'truck', 8: 'boat', 9: 'traffic light', 10: 'fire hydrant', 11: 'stop sign', 12: 'parking meter', 13: 'bench', 14: 'bird', 15: 'cat', 16: 'dog', 17: 'horse', 18: 'sheep', 19: 'cow', 20: 'elephant', 21: 'bear', 22: 'zebra', 23: 'giraffe', 24: 'backpack', 25: 'umbrella', 26: 'handbag', 27: 'tie', 28: 'suitcase', 29: 'frisbee', 30: 'skis', 31: 'snowboard', 32: 'sports ball', 33: 'kite', 34: 'baseball bat', 35: 'baseball glove', 36: 'skateboard', 37: 'surfboard', 38: 'tennis racket', 39: 'bottle', 40: 'wine glass', 41: 'cup', 42: 'fork', 43: 'knife', 44: 'spoon', 45: 'bowl', 46: 'banana', 47: 'apple', 48: 'sandwich', 49: 'orange', 50: 'broccoli', 51: 'carrot', 52: 'hot dog', 53: 'pizza', 54: 'donut', 55: 'cake', 56: 'chair', 57: 'couch', 58: 'potted plant', 59: 'bed', 60: 'dining table', 61: 'toilet', 62: 'tv', 63: 'laptop', 64: 'mouse', 65: 'remote', 66: 'keyboard', 67: 'cell phone', 68: 'microwave', 69: 'oven', 70: 'toaster', 71: 'sink', 72: 'refrigerator', 73: 'book', 74: 'clock', 75: 'vase', 76: 'scissors', 77: 'teddy bear', 78: 'hair drier', 79: 'toothbrush'}
+                image = read_image_bgr(adv_img_path)
+                draw = image.copy()
+                draw = cv2.cvtColor(draw, cv2.COLOR_BGR2RGB)
+                image = preprocess_image(image)
+                image, scale = resize_image(image)
+                boxes, scores, labels = test_model._model.predict_on_batch(np.expand_dims(image, axis=0))
+                boxes /= scale
+                for box, score, label in zip(boxes[0], scores[0], labels[0]):
+                    # scores are sorted so we can break
+                    if score < 0.5:
+                        break
+                        
+                    color = label_color(label)
+                    
+                    b = box.astype(int)
+                    draw_box(draw, b, color=color)
+                    
+                    caption = "{} {:.3f}".format(labels_to_names[label], score)
+                    draw_caption(draw, b, caption)
+                    
+                Image.fromarray(draw).save('temp_img_out/' + adv_name)
+                '''
+                image = read_image_bgr(adv_img_path)
+                image = preprocess_image(image)
+                image = resize_image_2(image, img_size)
+                image, scale = resize_image(image)
+                pd_out = test_model.batch_predictions(np.expand_dims(image, axis=0))[0]
+                boxes_list = pd_out['boxes']
+                for idx, temp_box in enumerate(boxes_list):
+                    pd_out['boxes'][idx] = np.array(temp_box) / scale
+            else:
+                image_adv_pil = Image.fromarray(image_adv_np.astype(np.uint8))
+                pd_out = test_model.predict(image_adv_pil)
+
             if args.dataset_type == 'voc':
                 pd_out = _transfer_label_to_voc(pd_out, args)
             elif args.dataset_type == 'coco':
