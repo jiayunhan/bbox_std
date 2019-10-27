@@ -29,7 +29,9 @@ with open('utils/VOC_AND_COCO80_CLASSES.pkl', 'rb') as f:
     VOC_AND_COCO80_CLASSES = pickle.load(f)
 
 
-PICK_LIST = []
+PICK_LIST = [
+    'ori'
+]
 BAN_LIST = []
 
 def parse_args(args):
