@@ -29,9 +29,7 @@ with open('utils/VOC_AND_COCO80_CLASSES.pkl', 'rb') as f:
     VOC_AND_COCO80_CLASSES = pickle.load(f)
 
 
-PICK_LIST = [
-    'ori'
-]
+PICK_LIST = []
 BAN_LIST = []
 
 def parse_args(args):
@@ -137,7 +135,7 @@ def main(args=None):
             
 
         mAP_score = calculate_mAP_from_files(os.path.join(result_dir, 'gt'), os.path.join(result_dir, 'pd'))
-        pdb.set_trace()
+
         shutil.rmtree(result_dir)
         print(curt_folder, ' : ', mAP_score)
         result_dict[curt_folder] = 'mAP: {0:.04f}'.format(mAP_score)
