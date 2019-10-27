@@ -10,6 +10,7 @@ import argparse
 
 from models.yolov3.yolov3_wrapper import YOLOv3
 from models.retina_resnet50.keras_retina_resnet50 import KerasResNet50RetinaNetModel
+from models.retina_resnet50.retinanet_resnet_50.image import preprocess_image
 from models.ssd_mobilenet.SSD import SSD_detector
 from utils.image_utils import load_image, save_image, save_bbox_img
 from utils.mAP import save_detection_to_file, calculate_mAP_from_files
@@ -59,7 +60,7 @@ def main(args=None):
     for temp_folder in os.listdir(args.dataset_dir):
         if not os.path.isdir(os.path.join(args.dataset_dir, temp_folder)):
             continue 
-        if temp_folder == 'imagenet_val_5000' or temp_folder == 'ori' or temp_folder == '.git' or temp_folder == '_annotations':
+        if temp_folder == 'imagenet_val_5000' or temp_folder == 'ori' or temp_folder == '.git' or temp_folder == '_annotations' or temp_folder == '_segmentations':
             continue 
         if len(PICK_LIST) != 0 and temp_folder not in PICK_LIST:
             continue

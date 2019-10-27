@@ -15,7 +15,7 @@ def numpy_to_variable(image, device=torch.device('cuda:0')):
 def variable_to_numpy(variable):
     return variable.cpu().detach().numpy()
 
-def convert_torch_det_output(torch_out, cs_th=0.3):
+def convert_torch_det_output(torch_out, cs_th=0.5):
     '''convert pytorch detection model output to list of dictionary of list
         [
             {

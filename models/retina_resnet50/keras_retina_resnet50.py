@@ -85,8 +85,11 @@ class KerasResNet50RetinaNetModel():
         """Return the task of the model: `classification` or `detection.`"""
         return self._task
 
-    def predict(self, image_pil):
-        image_np = np.array(image_pil).astype(float)
+    def predict(self, image_input, np_input=False):
+        if not np_input:
+            image_np = np.array(image_input).astype(float)
+        else:
+            image_np = image_input
         return self.batch_predictions(np.expand_dims(image_np, axis=0))[0]
 
     def batch_predictions(self, images):
@@ -119,7 +122,7 @@ class KerasResNet50RetinaNetModel():
                                                         labels):
                 if temp_score >= self._th_conf:
                     temp_box = np.array(
-                        [temp_box[0], temp_box[1], temp_box[2], temp_box[3]])
+                        [temp_box[1], temp_box[0], temp_box[3], temp_box[2]])
                     out_boxes.append(temp_box)
                     out_scores.append(temp_score)
                     out_classes.append(temp_class)
