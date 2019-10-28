@@ -15,9 +15,7 @@ from utils.torch_utils import numpy_to_variable, variable_to_numpy
 import pdb   
 
 
-PICK_LIST = [
-    'tidim_vgg16_layerAt_00_eps_16_stepsize_3.2_steps_10',
-]
+PICK_LIST = []
 BAN_LIST = []
 
 def parse_args(args):

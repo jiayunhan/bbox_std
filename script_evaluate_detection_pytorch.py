@@ -19,9 +19,7 @@ import pdb
 # python script_evaluate_detection_pytorch.py fasterrcnn --dataset-dir /home/yantao/workspace/datasets/VOC2012_1000
 
 
-PICK_LIST = [
-    'dr_inception_v3_layerAt_5_eps_16_stepsize_2.0_steps_500_lossmtd_selective_loss'
-]
+PICK_LIST = []
 BAN_LIST = []
 
 def parse_args(args):

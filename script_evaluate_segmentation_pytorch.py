@@ -43,9 +43,7 @@ PICK_LIST = [
     'dr_resnet152_layerAt_5_eps_16_stepsize_2.0_steps_500_lossmtd_std'
 ]
 '''
-PICK_LIST = [
-    'dr_inception_v3_layerAt_5_eps_16_stepsize_2.0_steps_500_lossmtd_selective_loss'
-]
+PICK_LIST = []
 BAN_LIST = []
 
 
@@ -78,7 +76,13 @@ def test(args):
         checkpoint = torch.load(args.pretrained_path)
         model.load_state_dict(checkpoint['state_dict'])
         model.eval()
-        img_transforms = None
+        #img_transforms = None
+        img_mean = [0.485, 0.456, 0.406]
+        img_std = [0.229, 0.224, 0.225]
+        img_transforms = torchvision.transforms.Compose([
+            torchvision.transforms.Resize(img_size), 
+            torchvision.transforms.ToTensor(), 
+            torchvision.transforms.Normalize(mean=img_mean, std=img_std)])
     elif args.test_model == 'deeplabv3_resnet101':
         args_dic['num_classes'] = 21
         model = torchvision.models.segmentation.deeplabv3_resnet101(
@@ -152,7 +156,10 @@ def test(args):
             else:
                 image_ori_var = img_transforms(Image.open(ori_img_path).convert('RGB')).unsqueeze_(axis=0).cuda()
                 with torch.no_grad():
-                    output_ori = model(image_ori_var)['out']
+                    if args.test_model == 'deeplabv3plus':
+                        output_ori = model(image_ori_var)
+                    else:
+                        output_ori = model(image_ori_var)['out']
             
             #Image.fromarray((output_ori[0].argmax(axis=0).cpu().numpy().astype(np.float32) / 21. * 255.).astype(np.uint8)).save('ori_fm.jpg')
             
@@ -172,7 +179,10 @@ def test(args):
             else:
                 image_adv_var = img_transforms(Image.open(adv_img_path).convert('RGB')).unsqueeze_(axis=0).cuda()
                 with torch.no_grad():
-                    output_adv = model(image_adv_var)['out']
+                    if args.test_model == 'deeplabv3plus':
+                        output_adv = model(image_adv_var)
+                    else:
+                        output_adv = model(image_adv_var)['out']
             
             #Image.fromarray((output_adv[0].argmax(axis=0).cpu().numpy().astype(np.float32) / 21. * 255.).astype(np.uint8)).save('adv_fm.jpg')
 

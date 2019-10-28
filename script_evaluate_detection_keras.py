@@ -10,6 +10,9 @@ import argparse
 
 from models.yolov3.yolov3_wrapper import YOLOv3
 from models.retina_resnet50.keras_retina_resnet50 import KerasResNet50RetinaNetModel
+from models.retina_resnet50.retinanet_resnet_50.utils.image import read_image_bgr, preprocess_image, resize_image, resize_image_2
+from models.retina_resnet50.retinanet_resnet_50.utils.colors import label_color
+from models.retina_resnet50.retinanet_resnet_50.utils.visualization import draw_box, draw_caption
 from models.ssd_mobilenet.SSD import SSD_detector
 from utils.image_utils import load_image, save_image, save_bbox_img
 from utils.mAP import save_detection_to_file, calculate_mAP_from_files
@@ -20,9 +23,7 @@ import pdb
 # python script_evaluate_detection_keras.py yolov3 --dataset-dir /home/yantao/workspace/datasets/VOC2012_1000
 
 
-PICK_LIST = [
-    'dr_inception_v3_layerAt_5_eps_16_stepsize_2.0_steps_500_lossmtd_selective_loss'
-]
+PICK_LIST = []
 BAN_LIST = []
 
 def parse_args(args):
@@ -89,13 +90,33 @@ def main(args=None):
             
             image_ori_np = load_image(data_format='channels_last', shape=img_size, bounds=(0, 255), abs_path=True, fpath=ori_img_path)
             Image.fromarray((image_ori_np).astype(np.uint8)).save(os.path.join(result_dir, 'ori.jpg'))
-            image_ori_pil = Image.fromarray(image_ori_np.astype(np.uint8))
-            gt_out = test_model.predict(image_ori_pil)
+            if args.test_model == 'retina_resnet50':
+                image = read_image_bgr(ori_img_path)
+                image = preprocess_image(image)
+                image = resize_image_2(image, img_size)
+                image, scale = resize_image(image)
+                gt_out = test_model.batch_predictions(np.expand_dims(image, axis=0))[0]
+                boxes_list = gt_out['boxes']
+                for idx, temp_box in enumerate(boxes_list):
+                    gt_out['boxes'][idx] = np.array(temp_box) / scale
+            else:
+                image_ori_pil = Image.fromarray(image_ori_np.astype(np.uint8))
+                gt_out = test_model.predict(image_ori_pil)
             
             image_adv_np = load_image(data_format='channels_last', shape=img_size, bounds=(0, 255), abs_path=True, fpath=adv_img_path)
             Image.fromarray((image_adv_np).astype(np.uint8)).save(os.path.join(result_dir, 'temp_adv.jpg'))
-            image_adv_pil = Image.fromarray(image_adv_np.astype(np.uint8))
-            pd_out = test_model.predict(image_adv_pil)
+            if args.test_model == 'retina_resnet50':
+                image = read_image_bgr(adv_img_path)
+                image = preprocess_image(image)
+                image = resize_image_2(image, img_size)
+                image, scale = resize_image(image)
+                pd_out = test_model.batch_predictions(np.expand_dims(image, axis=0))[0]
+                boxes_list = pd_out['boxes']
+                for idx, temp_box in enumerate(boxes_list):
+                    pd_out['boxes'][idx] = np.array(temp_box) / scale
+            else:
+                image_adv_pil = Image.fromarray(image_adv_np.astype(np.uint8))
+                pd_out = test_model.predict(image_adv_pil)
 
             save_detection_to_file(gt_out, os.path.join(result_dir, 'gt', temp_image_name_noext + '.txt'), 'ground_truth')
             save_detection_to_file(pd_out, os.path.join(result_dir, 'pd', temp_image_name_noext + '.txt'), 'detection')
