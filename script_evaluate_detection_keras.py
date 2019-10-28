@@ -23,7 +23,28 @@ import pdb
 # python script_evaluate_detection_keras.py yolov3 --dataset-dir /home/yantao/workspace/datasets/VOC2012_1000
 
 
-PICK_LIST = []
+PICK_LIST = [
+    'pgd_vgg16_layerAt_00_eps_16_stepsize_25.5_steps_40',
+    'mifgsm_vgg16_layerAt_00_eps_16_stepsize_25.5_steps_40',
+    'dim_vgg16_layerAt_00_eps_16_stepsize_25.5_steps_40',
+    'tidim_vgg16_layerAt_00_eps_16_stepsize_3.2_steps_10',
+    'dr_vgg16_layerAt_12_eps_16_stepsize_4.0_steps_100_lossmtd_std',
+    'dr_vgg16_layerAt_12_eps_16_stepsize_2.0_steps_500_lossmtd_std',
+    'dr_vgg16_layerAt_14_eps_16_stepsize_4.0_steps_100_lossmtd_std',
+    'dr_vgg16_layerAt_14_eps_16_stepsize_2.0_steps_500_lossmtd_std',
+    'pgd_inception_v3_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'mifgsm_inception_v3_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'dim_inception_v3_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'tidim_inception_v3_layerAt_00_eps_16_stepsize_3.2_steps_10',
+    'dr_inception_v3_layerAt_5_eps_16_stepsize_4.0_steps_100_lossmtd_selective_loss',
+    'dr_inception_v3_layerAt_5_eps_16_stepsize_2.0_steps_500_lossmtd_selective_loss',
+    'pgd_resnet152_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'mifgsm_resnet152_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'dim_resnet152_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
+    'tidim_resnet152_layerAt_00_eps_16_stepsize_3.2_steps_10',
+    'dr_resnet152_layerAt_5_eps_16_stepsize_4.0_steps_100_lossmtd_std',
+    'dr_resnet152_layerAt_5_eps_16_stepsize_2.0_steps_500_lossmtd_std'
+]
 BAN_LIST = []
 
 def parse_args(args):

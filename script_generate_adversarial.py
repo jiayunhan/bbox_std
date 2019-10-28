@@ -10,6 +10,7 @@ import argparse
 
 from attacks.dispersion import DispersionAttack_gpu
 from attacks.DIM import DIM_Attack
+from attacks.ti_dim import TIDIM_Attack
 from attacks.mifgsm import MomentumIteratorAttack
 from attacks.linf_pgd import LinfPGDAttack
 from models.vgg import Vgg16
@@ -100,7 +101,7 @@ def main(args=None):
             loss_mtd=loss_mtd
         )
 
-    elif args.adv_method == 'dim' or args.adv_method == 'mifgsm' or args.adv_method == 'pgd':
+    elif args.adv_method == 'tidim' or args.adv_method == 'dim' or args.adv_method == 'mifgsm' or args.adv_method == 'pgd':
         attack_layer_idx = [0]
         internal = [0]
         loss_mtd = ''
@@ -143,6 +144,16 @@ def main(args=None):
                 a=args.step_size/255., 
                 k=args.steps,  
                 random_start=False
+            )
+        elif args.adv_method == 'tidim':
+            attack = TIDIM_Attack(
+                target_model, 
+                decay_factor=1, 
+                prob=0.5, 
+                epsilon=args.epsilon/255., 
+                step_size=args.step_size/255., 
+                steps=args.steps, 
+                image_resize=330
             )
         
     else:
