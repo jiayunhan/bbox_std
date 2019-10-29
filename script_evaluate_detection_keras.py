@@ -7,6 +7,7 @@ from PIL import Image
 import numpy as np
 from tqdm import tqdm
 import argparse
+import datetime
 
 from models.yolov3.yolov3_wrapper import YOLOv3
 from models.retina_resnet50.keras_retina_resnet50 import KerasResNet50RetinaNetModel
@@ -93,9 +94,10 @@ def main(args=None):
     for curt_folder in tqdm(test_folders):
         print('Folder : {0}'.format(curt_folder))
 
-        result_dir = 'temp_dect_results'
+        currentDT = datetime.datetime.now()
+        result_dir = 'temp_dect_results_{0}_{1}'.format(currentDT.strftime("%Y_%m_%d_%H_%M_%S"), currentDT.microsecond)
         if os.path.exists(result_dir):
-            shutil.rmtree(result_dir)
+            raise
         os.mkdir(result_dir)
         os.mkdir(os.path.join(result_dir, 'gt'))
         os.mkdir(os.path.join(result_dir, 'pd'))

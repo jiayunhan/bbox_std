@@ -10,6 +10,7 @@ import torchvision
 import torch
 import pickle
 from pycocotools.coco import COCO
+import datetime
 
 from utils.image_utils import load_image, save_image, save_bbox_img
 from utils.mAP import save_detection_to_file, calculate_mAP_from_files
@@ -80,10 +81,10 @@ def main(args=None):
     result_dict = {}
     for curt_folder in tqdm(test_folders):
         print('Folder : {0}'.format(curt_folder))
-
-        result_dir = 'temp_dect_results'
+        currentDT = datetime.datetime.now()
+        result_dir = 'temp_dect_results_{0}_{1}'.format(currentDT.strftime("%Y_%m_%d_%H_%M_%S"), currentDT.microsecond)
         if os.path.exists(result_dir):
-            shutil.rmtree(result_dir)
+            raise
         os.mkdir(result_dir)
         os.mkdir(os.path.join(result_dir, 'gt'))
         os.mkdir(os.path.join(result_dir, 'pd'))
@@ -140,7 +141,7 @@ def main(args=None):
         print(curt_folder, ' : ', mAP_score)
         result_dict[curt_folder] = 'mAP: {0:.04f}'.format(mAP_score)
 
-        with open('temp_det_results_{0}.json'.format(args.test_model), 'w') as fout:
+        with open('temp_det_results_gt_{0}_{1}.json'.format(args.test_model, args.dataset_type), 'w') as fout:
             json.dump(result_dict, fout, indent=2)
 
 def _transfer_label_to_voc(pd_out, args):

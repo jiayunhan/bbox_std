@@ -196,7 +196,7 @@ def test(args):
         print(curt_folder, ' : ', result_str)
         result_dict[curt_folder] = result_str
 
-        with open('temp_seg_results_{0}.json'.format(args.test_model), 'w') as fout:
+        with open('temp_seg_results_gt_{0}_{1}.json'.format(args.test_model, args.dataset_type), 'w') as fout:
             json.dump(result_dict, fout, indent=2)
         
 

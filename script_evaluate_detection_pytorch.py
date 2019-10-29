@@ -8,6 +8,7 @@ from tqdm import tqdm
 import argparse
 import torchvision
 import torch
+import datetime
 
 from utils.image_utils import load_image, save_image, save_bbox_img
 from utils.mAP import save_detection_to_file, calculate_mAP_from_files
@@ -70,9 +71,10 @@ def main(args=None):
     for curt_folder in tqdm(test_folders):
         print('Folder : {0}'.format(curt_folder))
 
-        result_dir = 'temp_dect_results'
+        currentDT = datetime.datetime.now()
+        result_dir = 'temp_dect_results_{0}_{1}'.format(currentDT.strftime("%Y_%m_%d_%H_%M_%S"), currentDT.microsecond)
         if os.path.exists(result_dir):
-            shutil.rmtree(result_dir)
+            raise
         os.mkdir(result_dir)
         os.mkdir(os.path.join(result_dir, 'gt'))
         os.mkdir(os.path.join(result_dir, 'pd'))
