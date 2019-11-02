@@ -16,13 +16,13 @@ if os.path.exists(output_dir):
 os.mkdir(output_dir)
 
 
-dir_path = '/home/yantao/workspace/datasets/VOC2012_1000'
+dir_path = '/home/yantao/workspace/datasets/baseline_COCO'
 dir_advs = {
-    'dr' : 'dr_vgg16_layerAt_14_eps_16_stepsize_1.0_steps_1500_lossmtd_std',
-    'pgd' : 'pgd_vgg16_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
-    'mifgsm' : 'mifgsm_vgg16_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
-    'dim' : 'dim_vgg16_layerAt_0_eps_16_stepsize_25.5_steps_40_lossmtd_',
-    'ti' : 'tidim_vgg16_layerAt_00_eps_16_stepsize_3.2_steps_10'
+    'dr' : '/home/yantao/workspace/datasets/COCO2017_1000/dr_vgg16_layerAt_14_eps_16_stepsize_4.0_steps_100_lossmtd_std',
+    'pgd' : 'pgd_inception_v3_layerAt_0_eps_16_stepsize_1.0_steps_20_lossmtd_',
+    'mifgsm' : 'mifgsm_inception_v3_layerAt_0_eps_16_stepsize_1.0_steps_20_lossmtd_',
+    'dim' : 'dim_inception_v3_layerAt_0_eps_16_stepsize_1.0_steps_20_lossmtd_',
+    'ti' : 'tidim_inception_v3_layerAt_0_eps_16_stepsize_1.6_steps_20_lossmtd_'
 }
 
 num_classes = 21
@@ -49,7 +49,10 @@ for img_name in tqdm(img_names):
     img_paths = {}
     img_paths['ori'] = os.path.join(dir_path, 'ori', img_name + '.jpg')
     for key, val in dir_advs.items():
-        img_paths[key] = os.path.join(dir_path, val, img_name + '.png')
+        if key == 'dr':
+            img_paths[key] = os.path.join(val, img_name + '.png')
+        else:
+            img_paths[key] = os.path.join(dir_path, val, img_name + '.png')
     for perfix, img_path in img_paths.items():
         image_np = load_image(data_format='channels_last', shape=img_size, bounds=(0, 255), abs_path=True, fpath=img_path)
         image_pil = Image.fromarray(image_np.astype(np.uint8))
