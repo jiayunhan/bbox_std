@@ -37,7 +37,7 @@ with open('utils/VOC_AND_COCO80_CLASSES.pkl', 'rb') as f:
     VOC_AND_COCO80_CLASSES = pickle.load(f)
 
 PICK_LIST = []
-BAN_LIST = ['tidim_vgg16_layerAt_0_eps_16_stepsize_4.0_steps_500_lossmtd_']
+BAN_LIST = []
 
 def parse_args(args):
     """ Parse the arguments.
@@ -45,7 +45,7 @@ def parse_args(args):
     parser = argparse.ArgumentParser(description='Script for generating adversarial examples.')
     parser.add_argument('dataset_type', choices=['coco', 'voc'], help='Dataset for testing AEs.', type=str)
     parser.add_argument('--dataset-dir', help='Dataset folder path.', default='/home/yantao/workspace/datasets/baseline_COCO', type=str)
-    parser.add_argument('--pd-folder', help='Predicted pikle file folder path.', default='/home/yantao/workspace/datasets/results_SSD_resnet50', type=str)
+    parser.add_argument('--pd-folder', help='Predicted pikle file folder path.', default='/home/yantao/workspace/datasets/results_SSD_resnet50_fpn', type=str)
 
     return parser.parse_args()
 
@@ -119,10 +119,8 @@ def main(args=None):
                 pd_out['scores'].append(temp_score)
                 pd_out['classes'].append(temp_class)
                 pd_out['boxes'].append([temp_box[0] * img_size[0], temp_box[1] * img_size[1], temp_box[2] * img_size[0], temp_box[3] * img_size[1]])
-
             if args.dataset_type == 'voc':
                 pd_out = _transfer_label_to_voc(pd_out, args)
-
             save_detection_to_file(gt_out, os.path.join(result_dir, 'gt', temp_image_name_noext + '.txt'), 'ground_truth')
             save_detection_to_file(pd_out, os.path.join(result_dir, 'pd', temp_image_name_noext + '.txt'), 'detection')
             
@@ -137,8 +135,7 @@ def main(args=None):
             json.dump(result_dict, fout, indent=2)
 
 def _transfer_label_to_voc(pd_out, args):
-    voc_and_coco_classes = VOC_AND_COCO80_CLASSES
-
+    voc_and_coco_classes = VOC_AND_COCO91_CLASSES
     ret = {
         'classes' : [],
         'scores' : [],
