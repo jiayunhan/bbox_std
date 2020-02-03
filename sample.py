@@ -19,13 +19,13 @@ def _save_img(imgs_np, file_path):
 
 # Resnet152 [4, 5, 6, 7]
 # Vgg16 [2, 7, 14, 21, 28]
-image_np = np.expand_dims(load_image(data_format='channels_first', fpath='./images/example.png', abs_path=True), axis=0)
+image_np = np.expand_dims(load_image(data_format='channels_first', fpath='./images/img1.png', abs_path=True), axis=0)
 image = numpy_to_variable(image_np)
 _save_img(image_np, './temp_ori.png')
 
 model = Vgg16()
 internal = [i for i in range(29)]
-attack = DispersionAttack_gpu(model, epsilon=16./255, step_size=1./255, steps=200)
+attack = DispersionAttack_gpu(model, epsilon=16./255, step_size=1./255, steps=20, loss_mtd='std')
 adv = attack(image, attack_layer_idx_list=[14], internal=internal)
 
 adv_np = variable_to_numpy(adv)
