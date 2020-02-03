@@ -95,3 +95,13 @@ class _tranform_resize_padding(torch.nn.Module):
             return input_padded_resize
         else:
             return input_padded
+
+
+class Interpolate(torch.nn.Module):
+    def __init__(self, image_h, image_w):
+        super(Interpolate, self).__init__()
+        self.shape = [image_h, image_w]
+    
+    def __call__(self, input_tensor):
+        input_resize = torch.nn.functional.interpolate(input_tensor, size=(self.shape[0], self.shape[1]))
+        return input_resize

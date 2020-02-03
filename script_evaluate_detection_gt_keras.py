@@ -26,7 +26,7 @@ from utils.COCO2017_1000.annotation_loader import load_annotations as load_coco_
 import pdb                       
 
 
-# python script_evaluate_detection_gt_keras.py yolov3 voc --dataset-dir /home/yantao/workspace/datasets/VOC2012_1000_gt
+# python script_evaluate_detection_gt_keras.py yolov3 coco --dataset-dir /data1/yantao/DR_datasets/COCO2017_1000
 
 
 # {voc_idx : coco_idx}

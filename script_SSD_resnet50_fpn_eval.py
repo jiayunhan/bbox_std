@@ -82,7 +82,7 @@ def show_inference(model, dataset_dir, output_dir, folder, image_name):
         pickle.dump(output_dict, f)
 
 if __name__ == "__main__":
-    dataset_dir = "/home/yantao/COCO2017_1000"
+    dataset_dir = "/data1/yantao/DR_datasets/COCO2017_1000"
     output_dir = '/home/yantao/output_det_dir'
     if os.path.exists(output_dir):
         raise

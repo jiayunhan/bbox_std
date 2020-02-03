@@ -23,7 +23,7 @@ with open('labels.txt','r') as inf:
 model = Vgg16()
 internal = [i for i in range(29)]
 
-attack = DispersionAttack_opt(model, epsilon=32./255, steps=200)
+attack = DispersionAttack_opt(model, epsilon=16./255, steps=200)
 
 image_np = load_image(data_format='channels_first', fname='example.png')
 
