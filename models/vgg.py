@@ -3,6 +3,7 @@ import torch
 
 import pdb
 
+
 class Vgg16(torch.nn.Module):
     def __init__(self):
         super(Vgg16, self).__init__()
@@ -22,6 +23,7 @@ class Vgg16(torch.nn.Module):
             # if isinstance(model, torch.nn.modules.conv.Conv2d):
                 layers.append(x)
         return layers, pred
+            
 
 if __name__ == "__main__":
     Vgg16()

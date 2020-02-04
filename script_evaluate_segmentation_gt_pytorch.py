@@ -28,7 +28,7 @@ with open('utils/VOC_AND_COCO91_CLASSES.pkl', 'rb') as f:
 with open('utils/VOC_AND_COCO80_CLASSES.pkl', 'rb') as f:
     VOC_AND_COCO80_CLASSES = pickle.load(f)
 
-PICK_LIST = ['dr_inception_v3_layerAt_5_eps_8_stepsize_1.0_steps_20_lossmtd_std']
+PICK_LIST = []
 BAN_LIST = []
 
 
